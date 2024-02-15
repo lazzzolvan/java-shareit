@@ -1,6 +1,6 @@
 package ru.practicum.shareit.exception;
 
-public class DataNotCorrectException extends RuntimeException{
+public class DataNotCorrectException extends RuntimeException {
     public DataNotCorrectException() {
     }
 

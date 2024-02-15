@@ -1,7 +1,5 @@
 package ru.practicum.shareit.item.service;
 
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
@@ -14,9 +12,9 @@ public interface ItemService {
 
     Boolean remove(Long itemId);
 
-    List<Item> getAll();
+    List<Item> getAllByUser(Long userId);
 
     Item get(Long itemId);
 
-    Item searchItem(String name);
+    List<Item> searchItem(String name);
 }

@@ -15,11 +15,10 @@ public class InMemoryItemStorage implements ItemStorage {
 
     private final Map<Long, Item> itemStorage = new HashMap<>();
     private final UserStorage userStorage;
-    private Long generateID;
+    private Long generateID = 0L;
 
     public InMemoryItemStorage(UserStorage userStorage) {
         this.userStorage = userStorage;
-        generateID = 0L;
     }
 
     @Override
@@ -33,7 +32,7 @@ public class InMemoryItemStorage implements ItemStorage {
                 .request(item.getRequest())
                 .owner(userId)
                 .build();
-        itemStorage.put(itemModified.getId(), item);
+        itemStorage.put(itemModified.getId(), itemModified);
         return itemModified;
     }
 
@@ -43,6 +42,7 @@ public class InMemoryItemStorage implements ItemStorage {
             throw new DataNotFoundException(String.format("Item %s id not found or not found user id %s", itemId, userId));
         Item itemUpdate = Item.builder()
                 .id(itemId)
+                .owner(itemStorage.get(itemId).getOwner())
                 .build();
         if (item.getName() != null) {
             itemUpdate.setName(item.getName());
@@ -72,8 +72,13 @@ public class InMemoryItemStorage implements ItemStorage {
     }
 
     @Override
-    public List<Item> getAll() {
-        return new ArrayList<>(itemStorage.values());
+    public List<Item> getAllByUser(Long userId) {
+        List<Item> items = new ArrayList<>();
+        for (Item value : itemStorage.values()) {
+            if (value.getOwner().equals(userId))
+                items.add(value);
+        }
+        return items;
     }
 
     @Override
@@ -81,5 +86,10 @@ public class InMemoryItemStorage implements ItemStorage {
         if (!itemStorage.containsKey(itemId))
             throw new DataNotFoundException(String.format("Item %s id not found", itemId));
         return itemStorage.get(itemId);
+    }
+
+    @Override
+    public List<Item> getAll() {
+        return new ArrayList<>(itemStorage.values());
     }
 }

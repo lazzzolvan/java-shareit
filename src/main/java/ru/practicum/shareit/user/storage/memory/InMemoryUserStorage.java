@@ -11,11 +11,12 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-public class InMemoryUserStorage  implements UserStorage{
+public class InMemoryUserStorage implements UserStorage {
 
     private final Map<Long, User> userStorage = new HashMap<>();
 
     private Long generateID = 0L;
+
     @Override
     public User create(User user) {
         for (User value : userStorage.values()) {
@@ -51,7 +52,7 @@ public class InMemoryUserStorage  implements UserStorage{
         }
         if (user.getEmail() != null) {
             for (User value : userStorage.values()) {
-                if (value.getEmail().equals(user.getEmail()))
+                if (value.getEmail().equals(user.getEmail()) && !value.getId().equals(userId))
                     throw new DataNotCorrectException("Пользователь с этой почтой уже занят");
             }
             userUpdate.setEmail(user.getEmail());

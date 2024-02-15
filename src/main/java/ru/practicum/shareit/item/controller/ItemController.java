@@ -36,9 +36,9 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemResponse> getAll() {
-        log.info("Get all items");
-        List<Item> items = service.getAll();
+    public List<ItemResponse> getAll(@RequestHeader("X-Sharer-User-Id") Long userId) {
+        log.info("Get all items by user {} id", userId);
+        List<Item> items = service.getAllByUser(userId);
         return mapper.toItemResponseOfList(items);
     }
 
@@ -57,9 +57,10 @@ public class ItemController {
         return mapper.toItemResponse(itemUpdate);
     }
 
-    @GetMapping("/search?text={text}")
-    public ItemResponse searchItem(@PathVariable("text") String name) {
+    @GetMapping("/search")
+    public List<ItemResponse> searchItem(@RequestParam("text") String name) {
         log.info("Search item with name {}", name);
-        return mapper.toItemResponse(service.searchItem(name));
+        return mapper.toItemResponseOfList(service.searchItem(name));
     }
+
 }

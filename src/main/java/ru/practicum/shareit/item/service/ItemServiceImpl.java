@@ -2,10 +2,10 @@ package ru.practicum.shareit.item.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exception.DataNotFoundException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.memory.ItemStorage;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -30,8 +30,8 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<Item> getAll() {
-        return storage.getAll();
+    public List<Item> getAllByUser(Long userId) {
+        return storage.getAllByUser(userId);
     }
 
     @Override
@@ -39,11 +39,14 @@ public class ItemServiceImpl implements ItemService {
         return storage.get(itemId);
     }
 
-    public Item searchItem(String name) {
+    public List<Item> searchItem(String name) {
+        List<Item> items = new ArrayList<>();
+        if (name.isEmpty())
+            return items;
         for (Item item : storage.getAll()) {
-            if (item.getName().toLowerCase().contains(name.toLowerCase()))
-                return item;
+            if (item.getDescription().toLowerCase().contains(name.toLowerCase()) && item.getAvailable())
+                items.add(item);
         }
-        throw new DataNotFoundException(String.format("Item not found, name: %s", name.toLowerCase()));
+        return items;
     }
 }

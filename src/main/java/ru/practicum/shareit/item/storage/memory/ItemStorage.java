@@ -12,7 +12,9 @@ public interface ItemStorage {
 
     Boolean remove(Long itemId);
 
-    List<Item> getAll();
+    List<Item> getAllByUser(Long userId);
 
     Item get(Long itemId);
+
+    List<Item> getAll();
 }
