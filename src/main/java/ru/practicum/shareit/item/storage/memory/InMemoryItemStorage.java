@@ -38,7 +38,7 @@ public class InMemoryItemStorage implements ItemStorage {
 
     @Override
     public Item update(Long userId, Long itemId, Item item) {
-        if (!itemStorage.containsKey(itemId) || itemStorage.get(itemId).getOwner() != userId)
+        if (itemStorage.get(itemId).getOwner().equals(userId) || !itemStorage.containsKey(itemId))
             throw new DataNotFoundException(String.format("Item %s id not found or not found user id %s", itemId, userId));
         Item itemUpdate = Item.builder()
                 .id(itemId)
