@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item.storage.memory;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.exception.DataNotFoundException;
 import ru.practicum.shareit.item.model.Item;
@@ -11,56 +12,37 @@ import java.util.List;
 import java.util.Map;
 
 @Component
+@RequiredArgsConstructor
 public class InMemoryItemStorage implements ItemStorage {
 
     private final Map<Long, Item> itemStorage = new HashMap<>();
     private final UserStorage userStorage;
     private Long generateID = 0L;
 
-    public InMemoryItemStorage(UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
 
     @Override
     public Item create(Item item, Long userId) {
         userStorage.get(userId);
-        Item itemModified = Item.builder()
-                .id(++generateID)
-                .name(item.getName())
-                .available(item.getAvailable())
-                .description(item.getDescription())
-                .request(item.getRequest())
-                .owner(userId)
-                .build();
-        itemStorage.put(itemModified.getId(), itemModified);
-        return itemModified;
+        item.setId(++generateID);
+        item.setOwner(userId);
+        itemStorage.put(item.getId(), item);
+        return item;
     }
 
     @Override
     public Item update(Long userId, Long itemId, Item item) {
         if (!itemStorage.get(itemId).getOwner().equals(userId) || !itemStorage.containsKey(itemId))
             throw new DataNotFoundException(String.format("Item %s id not found or not found user id %s", itemId, userId));
-        Item itemUpdate = Item.builder()
-                .id(itemId)
-                .owner(itemStorage.get(itemId).getOwner())
-                .build();
         if (item.getName() != null) {
-            itemUpdate.setName(item.getName());
-        } else {
-            itemUpdate.setName(itemStorage.get(itemId).getName());
+            itemStorage.get(itemId).setName(item.getName());
         }
         if (item.getAvailable() != null) {
-            itemUpdate.setAvailable(item.getAvailable());
-        } else {
-            itemUpdate.setAvailable(itemStorage.get(itemId).getAvailable());
+            itemStorage.get(itemId).setAvailable(item.getAvailable());
         }
         if (item.getDescription() != null) {
-            itemUpdate.setDescription(item.getDescription());
-        } else {
-            itemUpdate.setDescription(itemStorage.get(itemId).getDescription());
+            itemStorage.get(itemId).setDescription(item.getDescription());
         }
-        itemStorage.put(itemId, itemUpdate);
-        return itemUpdate;
+        return itemStorage.get(itemId);
     }
 
     @Override

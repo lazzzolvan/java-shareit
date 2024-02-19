@@ -5,8 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.controller.dto.ItemRequest;
 import ru.practicum.shareit.item.controller.dto.ItemResponse;
-import ru.practicum.shareit.item.mapper.ItemMapper;
-import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
@@ -19,27 +17,23 @@ import java.util.List;
 public class ItemController {
 
     private final ItemService service;
-    private final ItemMapper mapper;
 
     @PostMapping
     public ItemResponse create(@RequestHeader("X-Sharer-User-Id") Long userId, @Valid @RequestBody ItemRequest itemRequest) {
-        Item item = mapper.toItem(itemRequest);
-        Item itemModified = service.create(item, userId);
-        log.info("Creating item {}", item);
-        return mapper.toItemResponse(itemModified);
+        log.info("Creating item {}", itemRequest);
+        return service.create(itemRequest, userId);
     }
 
     @GetMapping("/{itemId}")
     public ItemResponse get(@PathVariable Long itemId) {
         log.info("Get item by id {}", itemId);
-        return mapper.toItemResponse(service.get(itemId));
+        return service.get(itemId);
     }
 
     @GetMapping
     public List<ItemResponse> getAll(@RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info("Get all items by user {} id", userId);
-        List<Item> items = service.getAllByUser(userId);
-        return mapper.toItemResponseOfList(items);
+        return service.getAllByUser(userId);
     }
 
     @DeleteMapping("/{itemId}")
@@ -52,15 +46,13 @@ public class ItemController {
     public ItemResponse update(@RequestHeader("X-Sharer-User-Id") Long userId,
                                @PathVariable Long itemId, @RequestBody ItemRequest itemRequest) {
         log.info("Update item {} by id {}", itemRequest, itemId);
-        Item item = mapper.toItem(itemRequest);
-        Item itemUpdate = service.update(userId, itemId, item);
-        return mapper.toItemResponse(itemUpdate);
+        return service.update(userId, itemId, itemRequest);
     }
 
     @GetMapping("/search")
     public List<ItemResponse> searchItem(@RequestParam("text") String name) {
         log.info("Search item with name {}", name);
-        return mapper.toItemResponseOfList(service.searchItem(name));
+        return service.searchItem(name);
     }
 
 }

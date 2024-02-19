@@ -23,13 +23,9 @@ public class InMemoryUserStorage implements UserStorage {
             if (value.getEmail().equals(user.getEmail()))
                 throw new DataNotCorrectException("Пользователь с этой почтой уже занят");
         }
-        User userModified = User.builder()
-                .id(++generateID)
-                .name(user.getName())
-                .email(user.getEmail())
-                .build();
-        userStorage.put(userModified.getId(), userModified);
-        return userModified;
+        user.setId(++generateID);
+        userStorage.put(user.getId(), user);
+        return user;
     }
 
     @Override
@@ -42,26 +38,17 @@ public class InMemoryUserStorage implements UserStorage {
         if (!userStorage.containsKey(userId)) {
             throw new DataNotFoundException(String.format("User %s not found", userId));
         }
-        User userUpdate = User.builder()
-                .id(userId)
-                .build();
         if (user.getName() != null) {
-            userUpdate.setName(user.getName());
-        } else {
-            userUpdate.setName(userStorage.get(userId).getName());
+            userStorage.get(userId).setName(user.getName());
         }
         if (user.getEmail() != null) {
             for (User value : userStorage.values()) {
                 if (value.getEmail().equals(user.getEmail()) && !value.getId().equals(userId))
                     throw new DataNotCorrectException("Пользователь с этой почтой уже занят");
             }
-            userUpdate.setEmail(user.getEmail());
-
-        } else {
-            userUpdate.setEmail(userStorage.get(userId).getEmail());
+            userStorage.get(userId).setEmail(user.getEmail());
         }
-        userStorage.put(userId, userUpdate);
-        return userUpdate;
+        return userStorage.get(userId);
     }
 
     @Override

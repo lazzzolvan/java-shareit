@@ -2,6 +2,9 @@ package ru.practicum.shareit.user.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.user.controller.dto.UserRequest;
+import ru.practicum.shareit.user.controller.dto.UserResponse;
+import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.memory.UserStorage;
 
@@ -12,15 +15,18 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     private final UserStorage storage;
+    private final UserMapper mapper;
 
     @Override
-    public User create(User user) {
-        return storage.create(user);
+    public UserResponse create(UserRequest user) {
+        User userModified = mapper.toUser(user);
+        return mapper.toUserResponse(storage.create(userModified));
     }
 
     @Override
-    public User update(Long userId, User user) {
-        return storage.update(userId, user);
+    public UserResponse update(Long userId, UserRequest user) {
+        User userModified = mapper.toUser(user);
+        return mapper.toUserResponse(storage.update(userId, userModified));
     }
 
     @Override
@@ -29,12 +35,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> getAll() {
-        return storage.getAll();
+    public List<UserResponse> getAll() {
+        return mapper.toUserResponseList(storage.getAll());
     }
 
     @Override
-    public User get(Long id) {
-        return storage.get(id);
+    public UserResponse get(Long id) {
+        return mapper.toUserResponse(storage.get(id));
     }
 }

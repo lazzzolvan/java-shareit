@@ -9,7 +9,7 @@ import lombok.*;
 @EqualsAndHashCode(of = {"id"})
 public class User {
 
-    private final Long id;
+    private Long id;
 
     private String name;
 
