@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.controller.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import ru.practicum.shareit.user.model.User;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -24,7 +25,7 @@ public class ItemRequest {
     @NotNull
     private final Boolean available;
 
-    private final Long owner;
+    private final User owner;
 
-    private final String request;
+    private final ItemRequest request;
 }
