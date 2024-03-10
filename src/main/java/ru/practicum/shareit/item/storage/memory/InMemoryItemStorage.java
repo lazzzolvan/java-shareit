@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.exception.DataNotFoundException;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.memory.UserStorage;
 
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ public class InMemoryItemStorage implements ItemStorage {
     public Item create(Item item, Long userId) {
         userStorage.get(userId);
         item.setId(++generateID);
-        item.setOwner(userId);
+        item.setOwner(userStorage.get(userId));
         itemStorage.put(item.getId(), item);
         return item;
     }

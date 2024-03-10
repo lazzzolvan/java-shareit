@@ -10,7 +10,7 @@ public interface UserService {
 
     UserResponse update(Long userId, UserRequest user);
 
-    Boolean remove(Long userId);
+    void remove(Long userId);
 
     List<UserResponse> getAll();
 
