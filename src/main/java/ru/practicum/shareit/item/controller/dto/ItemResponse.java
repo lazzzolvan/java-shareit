@@ -1,19 +1,27 @@
 package ru.practicum.shareit.item.controller.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
+import ru.practicum.shareit.booking.controller.dto.BookingShortDto;
+
+import java.util.List;
 
 @Getter
+@Setter
 @AllArgsConstructor
-@Builder
 public class ItemResponse {
 
     private final Long id;
 
-    private final String name;
+    private String name;
 
-    private final String description;
+    private String description;
 
-    private final Boolean available;
+    private Boolean available;
+
+    private ItemRequest request;
+    private BookingShortDto nextBooking;
+    private BookingShortDto lastBooking;
+    private List<CommentResponse> comments;
 }

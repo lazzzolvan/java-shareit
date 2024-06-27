@@ -2,7 +2,7 @@ package ru.practicum.shareit.booking.controller.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import ru.practicum.shareit.booking.model.Status;
+import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
@@ -27,5 +27,5 @@ public class BookingRequest {
     @NotNull
     private final User booker;
 
-    private final Status status;
+    private final BookingStatus bookingStatus;
 }

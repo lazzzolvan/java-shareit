@@ -9,7 +9,9 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
-
+/*    @Mapping(source = "userRequest.id", target = "id")
+    @Mapping(source = "userRequest.name", target = "name")
+    @Mapping(source = "userRequest.email", target = "email")*/
     User toUser(UserRequest userRequest);
 
     UserResponse toUserResponse(User user);

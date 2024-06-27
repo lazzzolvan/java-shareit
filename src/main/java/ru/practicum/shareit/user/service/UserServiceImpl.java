@@ -11,7 +11,6 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.List;
-import java.util.Objects;
 
 @AllArgsConstructor
 @Service
@@ -33,8 +32,13 @@ public class UserServiceImpl implements UserService {
         User userModified = repository.findById(userId)
                 .orElseThrow(() -> new DataNotFoundException("User with id not found: " + userId));
 
-        userModified.setName(Objects.requireNonNull(userModified.getName(), user.getName()));
-        userModified.setEmail(Objects.requireNonNullElse(userModified.getEmail(), user.getEmail()));
+        if (user.getName() != null) {
+            userModified.setName(user.getName());
+        }
+
+        if (user.getEmail() != null) {
+            userModified.setEmail(user.getEmail());
+        }
         return mapper.toUserResponse(repository.save(userModified));
     }
 
