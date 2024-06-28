@@ -20,6 +20,7 @@ public class BookingController {
 
     private final String header = "X-Sharer-User-Id";
 
+
     @PostMapping
     public BookingResponse create(@RequestBody @Valid BookingShortDto bookingDto,
                                   @RequestHeader(header) Long userId) {

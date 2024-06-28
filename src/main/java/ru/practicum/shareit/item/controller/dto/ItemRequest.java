@@ -20,7 +20,6 @@ public class ItemRequest {
     @NotBlank
     private final String name;
 
-    @NotNull
     @NotBlank
     @Size(max = 200, min = 1)
     private final String description;

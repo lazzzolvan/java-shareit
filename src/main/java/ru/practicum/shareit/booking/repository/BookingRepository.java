@@ -21,7 +21,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findAllByBooker(User user, Sort sort);
 
     @EntityGraph(attributePaths = {"item", "item.owner", "booker"})
-    List<Booking> findAllByBookerAndStartBeforeAndEndAfterOrderByStartDesc(User user, LocalDateTime start, LocalDateTime end);
+    List<Booking> findAllByBookerAndStartBeforeAndEndAfter(User user, LocalDateTime start, LocalDateTime end, Sort sort);
 
     @EntityGraph(attributePaths = {"item", "item.owner", "booker"})
     List<Booking> findAllByBookerAndEndBefore(User user, LocalDateTime now, Sort sort);
@@ -36,7 +36,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findAllByItemOwner(User owner, Sort sort);
 
     @EntityGraph(attributePaths = {"item", "item.owner", "booker"})
-    List<Booking> findAllByItemOwnerAndStartBeforeAndEndAfterOrderByStartAsc(User owner, LocalDateTime start, LocalDateTime end);
+    List<Booking> findAllByItemOwnerAndStartBeforeAndEndAfter(User owner, LocalDateTime start, LocalDateTime end, Sort sort);
 
     @EntityGraph(attributePaths = {"item", "item.owner", "booker"})
     List<Booking> findAllByItemOwnerAndEndBefore(User owner, LocalDateTime now, Sort sort);
@@ -48,11 +48,11 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findAllByItemOwnerAndStatusEquals(User owner, BookingStatus status, Sort sort);
 
     @EntityGraph(attributePaths = {"item", "item.owner", "booker"})
-    List<Booking> findAllByItemIdInAndStartBeforeOrderByItemIdAscStartAsc(List<Long> itemIds, LocalDateTime now);
+    List<Booking> findAllByItemIdInAndStartBefore(List<Long> itemIds, LocalDateTime now, Sort sort);
 
     @EntityGraph(attributePaths = {"item", "item.owner", "booker"})
-    List<Booking> findAllByItemIdAndStartAfterOrderByStartAsc(Long id, LocalDateTime start);
+    List<Booking> findAllByItemIdAndStartAfter(Long id, LocalDateTime start, Sort sort);
 
     @EntityGraph(attributePaths = {"item", "item.owner", "booker"})
-    List<Booking> findAllByItemIdAndStartBeforeOrderByStartDesc(Long id, LocalDateTime start);
+    List<Booking> findAllByItemIdAndStartBeforeOrderByStartDesc(Long id, LocalDateTime start, Sort sort);
 }

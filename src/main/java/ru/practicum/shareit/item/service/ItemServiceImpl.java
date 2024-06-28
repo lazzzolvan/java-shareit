@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
@@ -39,6 +40,9 @@ public class ItemServiceImpl implements ItemService {
     private final CommentRepository commentRepository;
     private final ItemMapper itemMapper;
     private final CommentMapper commentMapper;
+    private final Sort sortByStartDesc = Sort.by(Sort.Direction.DESC, "start");
+    private final Sort sortByStartAsc = Sort.by(Sort.Direction.ASC, "start");
+    private final Sort sortByItemAndStartAsc = Sort.by(Sort.Direction.ASC, "itemId", "start");
 
     @Override
     @Transactional
@@ -102,13 +106,13 @@ public class ItemServiceImpl implements ItemService {
                 .map(commentMapper::toCommentResponse).collect(Collectors.toList()));
 
         if (item.getOwner().getId().equals(userId)) {
-            List<Booking> lastBookings = bookingRepository.findAllByItemIdAndStartBeforeOrderByStartDesc(itemId, LocalDateTime.now());
+            List<Booking> lastBookings = bookingRepository.findAllByItemIdAndStartBeforeOrderByStartDesc(itemId, LocalDateTime.now(), sortByStartDesc);
             if (!lastBookings.isEmpty()) {
                 itemResponse.setLastBooking(bookingMapper.toBookingShortDtoFromBooking(lastBookings.get(0)));
             }
 
             if (itemResponse.getLastBooking() != null) {
-                List<Booking> nextBookings = bookingRepository.findAllByItemIdAndStartAfterOrderByStartAsc(itemId, LocalDateTime.now());
+                List<Booking> nextBookings = bookingRepository.findAllByItemIdAndStartAfter(itemId, LocalDateTime.now(), sortByStartAsc);
                 if (!nextBookings.isEmpty()) {
                     itemResponse.setNextBooking(bookingMapper.toBookingShortDtoFromBooking(nextBookings.get(0)));
                 }
@@ -127,7 +131,7 @@ public class ItemServiceImpl implements ItemService {
         List<Long> itemIds = itemDtos.stream().map(ItemResponse::getId).collect(Collectors.toList());
 
         List<Booking> lastBookings = bookingRepository
-                .findAllByItemIdInAndStartBeforeOrderByItemIdAscStartAsc(itemIds, LocalDateTime.now());
+                .findAllByItemIdInAndStartBefore(itemIds, LocalDateTime.now(), sortByItemAndStartAsc);
 
         Map<Long, List<Booking>> itemToBooking = lastBookings.stream()
                 .collect(Collectors.groupingBy(booking -> booking.getItem().getId()));
@@ -138,7 +142,7 @@ public class ItemServiceImpl implements ItemService {
                 itemDto.setLastBooking(bookingMapper.toBookingShortDtoFromBooking(bookings.get(0)));
 
                 List<Booking> nextBooking = bookingRepository
-                        .findAllByItemIdAndStartAfterOrderByStartAsc(itemDto.getId(), bookings.get(0).getStart());
+                        .findAllByItemIdAndStartAfter(itemDto.getId(), bookings.get(0).getStart(), sortByStartAsc);
                 if (!nextBooking.isEmpty()) {
                     itemDto.setNextBooking(bookingMapper.toBookingShortDtoFromBooking(nextBooking.get(0)));
                 }
@@ -149,22 +153,6 @@ public class ItemServiceImpl implements ItemService {
 
         return itemDtos;
     }
-
-/*    @Override
-    public List<ItemResponse> getAllByUser(Long userId) {
-        List<Item> items = new ArrayList<>();
-        for (Item item : itemRepository.findAll()) {
-            if (item.getOwner().equals(userId))
-                items.add(item);
-        }
-        return itemMapper.toItemResponseOfList(items);
-    }
-
-    @Override
-    public ItemResponse get(Long itemId,Long userId) {
-        return itemMapper.toItemResponse(itemRepository.findById(itemId)
-                .orElseThrow(() -> new DataNotFoundException(String.format("Item with %s id not found", itemId))));
-    }*/
 
     public List<ItemResponse> searchItem(String name) {
         List<Item> items = new ArrayList<>();

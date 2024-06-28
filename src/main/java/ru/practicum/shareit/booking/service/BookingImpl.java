@@ -31,7 +31,8 @@ public class BookingImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final BookingMapper mapper;
 
-    private final Sort sort = Sort.by(Sort.Direction.DESC, "start");
+    private final Sort sortByStartDesc = Sort.by(Sort.Direction.DESC, "start");
+    private final Sort sortByStartAsc = Sort.by(Sort.Direction.DESC, "start");
 
     @Override
     @Transactional
@@ -105,17 +106,17 @@ public class BookingImpl implements BookingService {
         List<Booking> bookings = new ArrayList<>();
 
         if (state.equals(BookingState.ALL)) {
-            bookings.addAll(bookingRepository.findAllByBooker(user, sort));
+            bookings.addAll(bookingRepository.findAllByBooker(user, sortByStartDesc));
         } else if (state.equals(BookingState.CURRENT)) {
-            bookings.addAll(bookingRepository.findAllByBookerAndStartBeforeAndEndAfterOrderByStartDesc(user, LocalDateTime.now(), LocalDateTime.now()));
+            bookings.addAll(bookingRepository.findAllByBookerAndStartBeforeAndEndAfter(user, LocalDateTime.now(), LocalDateTime.now(), sortByStartDesc));
         } else if (state.equals(BookingState.PAST)) {
-            bookings.addAll(bookingRepository.findAllByBookerAndEndBefore(user, LocalDateTime.now(), sort));
+            bookings.addAll(bookingRepository.findAllByBookerAndEndBefore(user, LocalDateTime.now(), sortByStartDesc));
         } else if (state.equals(BookingState.FUTURE)) {
-            bookings.addAll(bookingRepository.findAllByBookerAndStartAfter(user, LocalDateTime.now(), sort));
+            bookings.addAll(bookingRepository.findAllByBookerAndStartAfter(user, LocalDateTime.now(), sortByStartDesc));
         } else if (state.equals(BookingState.WAITING)) {
-            bookings.addAll(bookingRepository.findAllByBookerAndStatusEquals(user, BookingStatus.WAITING, sort));
+            bookings.addAll(bookingRepository.findAllByBookerAndStatusEquals(user, BookingStatus.WAITING, sortByStartDesc));
         } else if (state.equals(BookingState.REJECTED)) {
-            bookings.addAll(bookingRepository.findAllByBookerAndStatusEquals(user, BookingStatus.REJECTED, sort));
+            bookings.addAll(bookingRepository.findAllByBookerAndStatusEquals(user, BookingStatus.REJECTED, sortByStartDesc));
         } else
             throw new NotCorrectRequestException("Unknown state: " + BookingState.UNSUPPORTED_STATUS);
 
@@ -130,23 +131,23 @@ public class BookingImpl implements BookingService {
 
         switch (state) {
             case ALL:
-                bookings.addAll(bookingRepository.findAllByItemOwner(user, sort));
+                bookings.addAll(bookingRepository.findAllByItemOwner(user, sortByStartDesc));
                 break;
             case CURRENT:
-                bookings.addAll(bookingRepository.findAllByItemOwnerAndStartBeforeAndEndAfterOrderByStartAsc(user,
-                        LocalDateTime.now(), LocalDateTime.now()));
+                bookings.addAll(bookingRepository.findAllByItemOwnerAndStartBeforeAndEndAfter(user,
+                        LocalDateTime.now(), LocalDateTime.now(), sortByStartAsc));
                 break;
             case PAST:
-                bookings.addAll(bookingRepository.findAllByItemOwnerAndEndBefore(user, LocalDateTime.now(), sort));
+                bookings.addAll(bookingRepository.findAllByItemOwnerAndEndBefore(user, LocalDateTime.now(), sortByStartDesc));
                 break;
             case FUTURE:
-                bookings.addAll(bookingRepository.findAllByItemOwnerAndStartAfter(user, LocalDateTime.now(), sort));
+                bookings.addAll(bookingRepository.findAllByItemOwnerAndStartAfter(user, LocalDateTime.now(), sortByStartDesc));
                 break;
             case WAITING:
-                bookings.addAll(bookingRepository.findAllByItemOwnerAndStatusEquals(user, BookingStatus.WAITING, sort));
+                bookings.addAll(bookingRepository.findAllByItemOwnerAndStatusEquals(user, BookingStatus.WAITING, sortByStartDesc));
                 break;
             case REJECTED:
-                bookings.addAll(bookingRepository.findAllByItemOwnerAndStatusEquals(user, BookingStatus.REJECTED, sort));
+                bookings.addAll(bookingRepository.findAllByItemOwnerAndStatusEquals(user, BookingStatus.REJECTED, sortByStartDesc));
                 break;
             default:
                 throw new NotCorrectRequestException("Unknown state: " + BookingState.UNSUPPORTED_STATUS);
