@@ -106,7 +106,7 @@ public class ItemServiceImpl implements ItemService {
                 .map(commentMapper::toCommentResponse).collect(Collectors.toList()));
 
         if (item.getOwner().getId().equals(userId)) {
-            List<Booking> lastBookings = bookingRepository.findAllByItemIdAndStartBeforeOrderByStartDesc(itemId, LocalDateTime.now(), sortByStartDesc);
+            List<Booking> lastBookings = bookingRepository.findAllByItemIdAndStartBefore(itemId, LocalDateTime.now(), sortByStartDesc);
             if (!lastBookings.isEmpty()) {
                 itemResponse.setLastBooking(bookingMapper.toBookingShortDtoFromBooking(lastBookings.get(0)));
             }

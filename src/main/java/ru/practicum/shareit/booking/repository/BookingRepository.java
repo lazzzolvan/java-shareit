@@ -54,5 +54,5 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findAllByItemIdAndStartAfter(Long id, LocalDateTime start, Sort sort);
 
     @EntityGraph(attributePaths = {"item", "item.owner", "booker"})
-    List<Booking> findAllByItemIdAndStartBeforeOrderByStartDesc(Long id, LocalDateTime start, Sort sort);
+    List<Booking> findAllByItemIdAndStartBefore(Long id, LocalDateTime start, Sort sort);
 }
