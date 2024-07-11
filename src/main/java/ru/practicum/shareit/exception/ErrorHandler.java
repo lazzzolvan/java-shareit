@@ -19,4 +19,10 @@ public class ErrorHandler {
     public ErrorResponse handleValidationException(DataNotCorrectException exception) {
         return new ErrorResponse(exception.getMessage());
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleValidationException(NotCorrectRequestException exception) {
+        return new ErrorResponse(exception.getMessage());
+    }
 }

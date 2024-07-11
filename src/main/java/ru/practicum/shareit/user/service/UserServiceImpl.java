@@ -2,11 +2,13 @@ package ru.practicum.shareit.user.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.exception.DataNotFoundException;
 import ru.practicum.shareit.user.controller.dto.UserRequest;
 import ru.practicum.shareit.user.controller.dto.UserResponse;
 import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.storage.memory.UserStorage;
+import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.List;
 
@@ -14,33 +16,48 @@ import java.util.List;
 @Service
 public class UserServiceImpl implements UserService {
 
-    private final UserStorage storage;
+    private final UserRepository repository;
     private final UserMapper mapper;
 
     @Override
+    @Transactional
     public UserResponse create(UserRequest user) {
         User userModified = mapper.toUser(user);
-        return mapper.toUserResponse(storage.create(userModified));
+        return mapper.toUserResponse(repository.save(userModified));
     }
 
     @Override
+    @Transactional
     public UserResponse update(Long userId, UserRequest user) {
-        User userModified = mapper.toUser(user);
-        return mapper.toUserResponse(storage.update(userId, userModified));
+        User userModified = repository.findById(userId)
+                .orElseThrow(() -> new DataNotFoundException("User with id not found: " + userId));
+
+        if (user.getName() != null) {
+            userModified.setName(user.getName());
+        }
+
+        if (user.getEmail() != null) {
+            userModified.setEmail(user.getEmail());
+        }
+        return mapper.toUserResponse(repository.save(userModified));
     }
 
     @Override
-    public Boolean remove(Long userId) {
-        return storage.remove(userId);
+    @Transactional
+    public void remove(Long userId) {
+        repository.findById(userId)
+                .orElseThrow(() -> new DataNotFoundException("User with id not found: " + userId));
+        repository.deleteById(userId);
     }
 
     @Override
     public List<UserResponse> getAll() {
-        return mapper.toUserResponseList(storage.getAll());
+        return mapper.toUserResponseList(repository.findAll());
     }
 
     @Override
     public UserResponse get(Long id) {
-        return mapper.toUserResponse(storage.get(id));
+        return mapper.toUserResponse(repository.findById(id)
+                .orElseThrow(() -> new DataNotFoundException("User with id not found: " + id)));
     }
 }

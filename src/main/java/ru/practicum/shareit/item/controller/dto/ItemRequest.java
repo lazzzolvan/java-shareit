@@ -28,7 +28,7 @@ public class ItemRequest {
     @NotNull
     private final Boolean available;
 
-    private final User owner;
+    private final Long owner;
 
     @JsonProperty("requestId")
     private final Long requestId;

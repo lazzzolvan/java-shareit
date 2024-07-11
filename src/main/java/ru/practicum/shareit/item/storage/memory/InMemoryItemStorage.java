@@ -24,14 +24,14 @@ public class InMemoryItemStorage implements ItemStorage {
     public Item create(Item item, Long userId) {
         userStorage.get(userId);
         item.setId(++generateID);
-        item.setOwner(userId);
+        item.setOwner(userStorage.get(userId));
         itemStorage.put(item.getId(), item);
         return item;
     }
 
     @Override
     public Item update(Long userId, Long itemId, Item item) {
-        if (!itemStorage.get(itemId).getOwner().equals(userId) || !itemStorage.containsKey(itemId))
+        if (!itemStorage.get(itemId).getOwner().getId().equals(userId) || !itemStorage.containsKey(itemId))
             throw new DataNotFoundException(String.format("Item %s id not found or not found user id %s", itemId, userId));
         if (item.getName() != null) {
             itemStorage.get(itemId).setName(item.getName());
@@ -57,7 +57,7 @@ public class InMemoryItemStorage implements ItemStorage {
     public List<Item> getAllByUser(Long userId) {
         List<Item> items = new ArrayList<>();
         for (Item value : itemStorage.values()) {
-            if (value.getOwner().equals(userId))
+            if (value.getOwner().getId().equals(userId))
                 items.add(value);
         }
         return items;
