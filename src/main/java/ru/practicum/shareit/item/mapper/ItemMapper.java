@@ -15,9 +15,10 @@ public interface ItemMapper {
     @Mapping(source = "itemRequest.id", target = "id")
     @Mapping(source = "itemRequest.name", target = "name")
     @Mapping(source = "user", target = "owner")
- //   @Mapping(source = "itemRequest.request", target = "request.id")
+    @Mapping(source = "itemRequest.requestId", target = "request.id")
     Item toItem(ItemRequest itemRequest, User user);
 
+    @Mapping(source = "item.request.id", target = "request")
     ItemResponse toItemResponse(Item item);
 
     List<ItemResponse> toItemResponseOfList(List<Item> itemList);
