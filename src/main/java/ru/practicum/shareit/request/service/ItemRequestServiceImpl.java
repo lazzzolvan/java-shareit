@@ -51,7 +51,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         userService.get(requesterId);
         ItemRequest itemRequest = itemRequestRepository.findById(itemRequestId)
                 .orElseThrow(() -> new DataNotFoundException("ItemRequest not found with id " + itemRequestId));
-        List<Item> items = itemRepository.findByRequestRequesterId(itemRequest.getRequester().getId(), sortCreatedByDesc);
+        List<Item> items = itemRepository.findByRequestRequesterId(itemRequest.getRequester().getId());
         return mapper.toItemRequestDtoWithItems(itemRequest, items);
     }
 
@@ -61,7 +61,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         List<ItemRequest> itemRequests = itemRequestRepository.findByRequesterId(requesterId, sortCreatedByDesc);
         List<ItemRequestDtoWithItems> itemRequestDtoWithItemsList = new ArrayList<>();
         for (ItemRequest itemRequest : itemRequests) {
-            List<Item> items = itemRepository.findByRequestRequesterId(itemRequest.getRequester().getId(), Sort.by(Sort.Direction.DESC, "request.creationDate"));
+            List<Item> items = itemRepository.findByRequestRequesterId(itemRequest.getRequester().getId());
             ItemRequestDtoWithItems itemRequestDtoWithItems = mapper.toItemRequestDtoWithItems(itemRequests.get(0), items);
             itemRequestDtoWithItemsList.add(itemRequestDtoWithItems);
         }
@@ -76,7 +76,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
                     .stream()
                     .map(itemRequest -> mapper.toItemRequestDtoWithItems(itemRequest,
                             itemRepository.findByRequestRequesterId(
-                                    itemRequest.getRequester().getId(), sortCreatedByDesc)))
+                                    itemRequest.getRequester().getId())))
                     .collect(Collectors.toList());
         else if (from < 0 || size <= 0) {
             throw new NotCorrectRequestException("Not correct page parameters");
@@ -86,7 +86,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
             return itemRequestRepository.findByRequesterIdNot(requesterId, page)
                     .stream()
                     .map(itemRequest -> mapper.toItemRequestDtoWithItems(itemRequest,
-                            itemRepository.findByRequestRequesterId(itemRequest.getRequester().getId(), sortCreatedByDesc)))
+                            itemRepository.findByRequestRequesterId(itemRequest.getRequester().getId())))
                     .collect(Collectors.toList());
         }
     }

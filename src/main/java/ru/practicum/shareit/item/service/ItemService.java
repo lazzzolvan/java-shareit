@@ -17,9 +17,9 @@ public interface ItemService {
 
     List<ItemResponse> getAllByUser(Long userId);
 
-    ItemResponse get(Long itemId, Long userId);
+    ItemResponse get(Long itemId, Long userId, Integer from, Integer size);
 
-    List<ItemResponse> searchItem(String name);
+    List<ItemResponse> searchItem(String name, Integer from, Integer size);
 
     CommentResponse createComment(Long userId, Long itemId, CommentRequest commentRequest);
 }

@@ -2,6 +2,10 @@ package ru.practicum.shareit.request.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
+import ru.practicum.shareit.booking.controller.dto.BookingShortDto;
+import ru.practicum.shareit.item.controller.dto.CommentResponse;
+import ru.practicum.shareit.item.controller.dto.ItemResponse;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.controller.dto.ItemRequestDto;
 import ru.practicum.shareit.request.controller.dto.ItemRequestDtoWithItems;
@@ -21,14 +25,30 @@ public interface ItemRequestMapper {
 
     List<ItemRequestDto> toItemRequestList(List<ItemRequest> itemRequests);
 
-/*    @Mapping(source = "items.id", target = "items.id")
-    @Mapping(source = "items.name", target = "items.name")
-    @Mapping(source = "items.description", target = "items.description")
-    @Mapping(source = "items.available", target = "items.available")
-    @Mapping(source = "items.owner", target = "items.owner")
-    @Mapping(source = "items.request.id", target = "items.request")*/
-/*    @Mapping(source = "items", target = "items")*/
     @Mapping(source = "itemRequests.requester.id", target = "userId")
-    @Mapping(source = "items", target = "items.")
+    @Mapping(target = "items", qualifiedByName = "toItemResponse")
     ItemRequestDtoWithItems toItemRequestDtoWithItems(ItemRequest itemRequests, List<Item> items);
+
+    @Named("toItemResponse")
+    default ItemResponse toItemResponse(Item item) {
+        if (item == null) {
+            return null;
+        }
+
+        Long requestId = itemRequestId(item);
+        String name = item.getName();
+        String description = item.getDescription();
+        Boolean available = item.getAvailable();
+        Long id = item.getId();
+
+        BookingShortDto nextBooking = null;
+        BookingShortDto lastBooking = null;
+        List<CommentResponse> comments = null;
+
+        return new ItemResponse(id, name, description, available, requestId, nextBooking, lastBooking, comments);
+    }
+
+    default Long itemRequestId(Item item) {
+        return item != null && item.getRequest() != null ? item.getRequest().getId() : null;
+    }
 }

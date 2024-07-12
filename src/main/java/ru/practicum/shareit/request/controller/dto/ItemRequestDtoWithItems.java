@@ -2,7 +2,7 @@ package ru.practicum.shareit.request.controller.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
-import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.controller.dto.ItemResponse;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -28,5 +28,5 @@ public class ItemRequestDtoWithItems {
     @JsonProperty("created")
     private LocalDateTime creationDate;
 
-    private List<Item> items;
+    private List<ItemResponse> items;
 }

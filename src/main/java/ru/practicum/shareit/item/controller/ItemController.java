@@ -29,9 +29,11 @@ public class ItemController {
 
     @GetMapping("/{itemId}")
     public ItemResponse get(@PathVariable Long itemId,
-                            @RequestHeader(header) Long userId) {
+                            @RequestHeader(header) Long userId,
+                            @RequestParam(required = false) Integer from,
+                            @RequestParam(required = false) Integer size) {
         log.info("Получен запрос на поиск вещи с id = {}", itemId);
-        return service.get(itemId, userId);
+        return service.get(itemId, userId, from, size);
     }
 
     @GetMapping
@@ -54,9 +56,11 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public List<ItemResponse> searchItem(@RequestParam("text") String name) {
+    public List<ItemResponse> searchItem(@RequestParam("text") String name,
+                                         @RequestParam(required = false) Integer from,
+                                         @RequestParam(required = false) Integer size) {
         log.info("Search item with name {}", name);
-        return service.searchItem(name);
+        return service.searchItem(name, from, size);
     }
 
     @PostMapping("{itemId}/comment")

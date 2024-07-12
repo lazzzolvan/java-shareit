@@ -1,5 +1,7 @@
 package ru.practicum.shareit.booking.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -54,5 +56,41 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findAllByItemIdAndStartAfter(Long id, LocalDateTime start, Sort sort);
 
     @EntityGraph(attributePaths = {"item", "item.owner", "booker"})
-    List<Booking> findAllByItemIdAndStartBeforeOrderByStartDesc(Long id, LocalDateTime start, Sort sort);
+    List<Booking> findAllByItemIdAndStartBefore(Long id, LocalDateTime start, Sort sort);
+
+    @EntityGraph(attributePaths = {"item", "item.owner", "booker"})
+    Page<Booking> findAllByBooker(User user, Pageable page);
+
+    @EntityGraph(attributePaths = {"item", "item.owner", "booker"})
+    Page<Booking> findAllByBookerAndStartBeforeAndEndAfter(User user, LocalDateTime start, LocalDateTime end, Pageable page);
+
+    @EntityGraph(attributePaths = {"item", "item.owner", "booker"})
+    Page<Booking> findAllByBookerAndEndBefore(User user, LocalDateTime now, Pageable page);
+
+    @EntityGraph(attributePaths = {"item", "item.owner", "booker"})
+    Page<Booking> findAllByBookerAndStartAfter(User user, LocalDateTime now, Pageable page);
+
+    @EntityGraph(attributePaths = {"item", "item.owner", "booker"})
+    Page<Booking> findAllByBookerAndStatusEquals(User user, BookingStatus status, Pageable page);
+
+    @EntityGraph(attributePaths = {"item", "item.owner", "booker"})
+    Page<Booking> findAllByItemOwner(User owner, Pageable page);
+
+    @EntityGraph(attributePaths = {"item", "item.owner", "booker"})
+    Page<Booking> findAllByItemOwnerAndStartBeforeAndEndAfter(User owner, LocalDateTime start, LocalDateTime end, Pageable page);
+
+    @EntityGraph(attributePaths = {"item", "item.owner", "booker"})
+    Page<Booking> findAllByItemOwnerAndEndBefore(User owner, LocalDateTime now, Pageable page);
+
+    @EntityGraph(attributePaths = {"item", "item.owner", "booker"})
+    Page<Booking> findAllByItemOwnerAndStartAfter(User owner, LocalDateTime now, Pageable page);
+
+    @EntityGraph(attributePaths = {"item", "item.owner", "booker"})
+    Page<Booking> findAllByItemOwnerAndStatusEquals(User owner, BookingStatus status, Pageable page);
+
+    @EntityGraph(attributePaths = {"item", "item.owner", "booker"})
+    Page<Booking> findAllByItemIdAndStartBefore(Long id, LocalDateTime start, Pageable page);
+
+    @EntityGraph(attributePaths = {"item", "item.owner", "booker"})
+    Page<Booking> findAllByItemIdAndStartAfter(Long id, LocalDateTime start, Pageable page);
 }
