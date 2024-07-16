@@ -115,6 +115,26 @@ public class ItemServiceImpl implements ItemService {
             return getItemWithoutPage(itemId, userId);
         } else if (from < 0 || size <= 0) {
             throw new NotCorrectRequestException("Not correct page parameters");
+    public ItemResponse get(Long itemId, Long userId) {
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new DataNotFoundException("Вещь не найдена с id " + itemId));
+        ItemResponse itemResponse = itemMapper.toItemResponse(item);
+        itemResponse.setComments(commentRepository.findAllByItemId(itemId).stream()
+                .map(commentMapper::toCommentResponse).collect(Collectors.toList()));
+
+        if (item.getOwner().getId().equals(userId)) {
+            List<Booking> lastBookings = bookingRepository.findAllByItemIdAndStartBefore(itemId, LocalDateTime.now(), sortByStartDesc);
+            if (!lastBookings.isEmpty()) {
+                itemResponse.setLastBooking(bookingMapper.toBookingShortDtoFromBooking(lastBookings.get(0)));
+            }
+
+            if (itemResponse.getLastBooking() != null) {
+                List<Booking> nextBookings = bookingRepository.findAllByItemIdAndStartAfter(itemId, LocalDateTime.now(), sortByStartAsc);
+                if (!nextBookings.isEmpty()) {
+                    itemResponse.setNextBooking(bookingMapper.toBookingShortDtoFromBooking(nextBookings.get(0)));
+                }
+
+            }
         }
         int pageNumber = from / size;
         Pageable page = PageRequest.of(pageNumber, size, Sort.by(Sort.Direction.DESC, "start"));
