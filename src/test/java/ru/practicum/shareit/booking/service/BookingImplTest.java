@@ -356,30 +356,6 @@ class BookingImplTest {
         when(userRepository.findById(currentUser.getId())).thenReturn(Optional.of(currentUser));
 
         when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
-
-
-        Booking booking = Booking.builder()
-                .id(bookingDto2.getId())
-                .booker(user)
-                .start(bookingDto2.getStart())
-                .end(bookingDto2.getEnd())
-                .item(Item.builder()
-                        .id(bookingDto2.getItemId())
-                        .build())
-                .status(BookingStatus.WAITING)
-                .build();
-
-
-        BookingResponse bookingResponse = BookingResponse.builder()
-                .id(bookingDto2.getId())
-                .booker(user)
-                .end(bookingDto2.getEnd())
-                .start(bookingDto2.getStart())
-                .item(Item.builder()
-                        .id(bookingDto2.getItemId())
-                        .build())
-                .status(BookingStatus.WAITING)
-                .build();
         assertThrows(NotCorrectRequestException.class, () -> bookingService.create(bookingDto2, currentUser.getId()));
     }
 
