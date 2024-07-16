@@ -870,5 +870,48 @@ class BookingImplTest {
         // Assertions
         assertEquals("Unknown state: UNSUPPORTED_STATUS", exception.getMessage());
     }
+
+    @Test
+    void testGetAllByOwnerWithoutPagination() {
+        Long userId = 1L;
+        BookingState state = BookingState.ALL;
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+
+        when(bookingService.getBookingByOwnerWithoutPage(userId, state)).thenReturn(bookingResponseList);
+        Sort sortByStartDesc = Sort.by(Sort.Order.desc("start"));
+        when(bookingRepository.findAllByItemOwner(user, sortByStartDesc)).thenReturn(bookingList);
+        BookingResponse bookingResponse = BookingResponse.builder()
+                .id(booking.getId())
+                .status(BookingStatus.WAITING)
+                .item(booking.getItem())
+                .booker(booking.getBooker())
+                .start(booking.getStart())
+                .end(booking.getEnd())
+                .build();
+        when(bookingMapper.toBookingResponse(any(), any(), any()))
+                .thenReturn(bookingResponse);
+
+        List<BookingResponse> result = bookingService.getAllByOwner(userId, state, null, null);
+        assertEquals(bookingResponseList.get(0).getItem(), result.get(0).getItem());
+        assertEquals(bookingResponseList.get(0).getBooker(), result.get(0).getBooker());
+        assertEquals(bookingResponseList.get(0).getStatus(), result.get(0).getStatus());
+        assertEquals(bookingResponseList.get(0).getStart(), result.get(0).getStart());
+        assertEquals(bookingResponseList.get(0).getEnd(), result.get(0).getEnd());
+        assertEquals(bookingResponseList.get(0).getId(), result.get(0).getId());
+    }
+
+    @Test
+    void testGetAllByOwnerWithNegativeFromOrSize() {
+        Long userId = 1L;
+        BookingState state = BookingState.ALL;
+
+        Exception exception = assertThrows(NotCorrectRequestException.class, () ->
+                bookingService.getAllByOwner(userId, state, -1, 10));
+        assertEquals("Not correct page parameters", exception.getMessage());
+
+        exception = assertThrows(NotCorrectRequestException.class, () ->
+                bookingService.getAllByOwner(userId, state, 0, 0));
+        assertEquals("Not correct page parameters", exception.getMessage());
+    }
 }
 
