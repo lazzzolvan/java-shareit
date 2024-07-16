@@ -14,7 +14,6 @@ import ru.practicum.shareit.request.controller.dto.ItemRequestDtoWithItems;
 import ru.practicum.shareit.request.mapper.ItemRequestMapper;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
-import ru.practicum.shareit.request.service.ItemRequestServiceImpl;
 import ru.practicum.shareit.user.controller.dto.UserResponse;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
@@ -231,7 +230,7 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
-    void testGetItemRequests_InvalidPageParameters() {
+    void testGetItemRequests_InvalidPageParametersFromAndSize() {
         Long requesterId = 1L;
 
         assertThrows(NotCorrectRequestException.class, () -> itemRequestService.getItemRequests(requesterId, -1, 0));
@@ -241,5 +240,131 @@ class ItemRequestServiceImplTest {
         verifyNoInteractions(itemRequestRepository);
         verifyNoInteractions(itemRepository);
         verifyNoInteractions(mapper);
+    }
+
+    @Test
+    void testGetItemRequests_InvalidPageParametersFrom() {
+        Long requesterId = 1L;
+
+        assertThrows(NotCorrectRequestException.class, () -> itemRequestService.getItemRequests(requesterId, -1, 1));
+
+        verify(userService, times(1)).get(requesterId);
+
+        verifyNoInteractions(itemRequestRepository);
+        verifyNoInteractions(itemRepository);
+        verifyNoInteractions(mapper);
+    }
+
+    @Test
+    void testGetItemRequests_InvalidPageParametersSize() {
+        Long requesterId = 1L;
+
+        assertThrows(NotCorrectRequestException.class, () -> itemRequestService.getItemRequests(requesterId, 11, -1));
+
+        verify(userService, times(1)).get(requesterId);
+
+        verifyNoInteractions(itemRequestRepository);
+        verifyNoInteractions(itemRepository);
+        verifyNoInteractions(mapper);
+    }
+
+    @Test
+    void testGetItemRequests_NullFrom() {
+        Long requesterId = 1L;
+        UserResponse requesterResponse = UserResponse.builder().id(requesterId).build();
+        User requester = User.builder()
+                .id(requesterId)
+                .build();
+        ItemRequest itemRequest1 = ItemRequest.builder()
+                .id(1L)
+                .description("Test Item Request 1")
+                .requester(requester)
+                .creationDate(LocalDateTime.now().minusDays(1))
+                .build();
+        ItemRequest itemRequest2 = ItemRequest.builder()
+                .id(2L)
+                .description("Test Item Request 2")
+                .requester(requester)
+                .creationDate(LocalDateTime.now())
+                .build();
+        List<ItemRequest> itemRequests = List.of(itemRequest1, itemRequest2);
+        List<Item> items1 = new ArrayList<>();
+        List<Item> items2 = new ArrayList<>();
+        ItemRequestDtoWithItems itemRequestDtoWithItems1 = new ItemRequestDtoWithItems(1L, "Test Item Request 1", requesterId, itemRequest1.getCreationDate(), new ArrayList<>());
+        ItemRequestDtoWithItems itemRequestDtoWithItems2 = new ItemRequestDtoWithItems(2L, "Test Item Request 2", requesterId, itemRequest2.getCreationDate(), new ArrayList<>());
+        List<ItemRequestDtoWithItems> expectedDtoWithItemsList = List.of(itemRequestDtoWithItems1, itemRequestDtoWithItems2);
+
+        when(userService.get(requesterId)).thenReturn(requesterResponse);
+
+        when(itemRequestRepository.findByRequesterIdNot(requesterId, Sort.by(Sort.Direction.DESC, "creationDate")))
+                .thenReturn(itemRequests);
+
+        when(itemRepository.findByRequestRequesterId(requesterId)).thenReturn(items1, items2);
+
+        when(mapper.toItemRequestDtoWithItems(itemRequest1, items1)).thenReturn(itemRequestDtoWithItems1);
+        when(mapper.toItemRequestDtoWithItems(itemRequest2, items2)).thenReturn(itemRequestDtoWithItems2);
+
+        List<ItemRequestDtoWithItems> resultDtoWithItemsList = itemRequestService.getItemRequests(requesterId, null, 1);
+
+        assertNotNull(resultDtoWithItemsList);
+        assertEquals(expectedDtoWithItemsList.size(), resultDtoWithItemsList.size());
+        assertEquals(expectedDtoWithItemsList.get(0).getId(), resultDtoWithItemsList.get(0).getId());
+        assertEquals(expectedDtoWithItemsList.get(1).getId(), resultDtoWithItemsList.get(1).getId());
+
+        verify(userService, times(1)).get(requesterId);
+        verify(itemRequestRepository, times(1)).findByRequesterIdNot(requesterId, Sort.by(Sort.Direction.DESC, "creationDate"));
+        verify(itemRepository, times(2)).findByRequestRequesterId(requesterId); // Twice, once for each itemRequest
+        verify(mapper, times(1)).toItemRequestDtoWithItems(itemRequest1, items1);
+        verify(mapper, times(1)).toItemRequestDtoWithItems(itemRequest2, items2);
+    }
+
+    @Test
+    void testGetItemRequests_NullSize() {
+        Long requesterId = 1L;
+        UserResponse requesterResponse = UserResponse.builder().id(requesterId).build();
+        User requester = User.builder()
+                .id(requesterId)
+                .build();
+        ItemRequest itemRequest1 = ItemRequest.builder()
+                .id(1L)
+                .description("Test Item Request 1")
+                .requester(requester)
+                .creationDate(LocalDateTime.now().minusDays(1))
+                .build();
+        ItemRequest itemRequest2 = ItemRequest.builder()
+                .id(2L)
+                .description("Test Item Request 2")
+                .requester(requester)
+                .creationDate(LocalDateTime.now())
+                .build();
+        List<ItemRequest> itemRequests = List.of(itemRequest1, itemRequest2);
+        List<Item> items1 = new ArrayList<>();
+        List<Item> items2 = new ArrayList<>();
+        ItemRequestDtoWithItems itemRequestDtoWithItems1 = new ItemRequestDtoWithItems(1L, "Test Item Request 1", requesterId, itemRequest1.getCreationDate(), new ArrayList<>());
+        ItemRequestDtoWithItems itemRequestDtoWithItems2 = new ItemRequestDtoWithItems(2L, "Test Item Request 2", requesterId, itemRequest2.getCreationDate(), new ArrayList<>());
+        List<ItemRequestDtoWithItems> expectedDtoWithItemsList = List.of(itemRequestDtoWithItems1, itemRequestDtoWithItems2);
+
+        when(userService.get(requesterId)).thenReturn(requesterResponse);
+
+        when(itemRequestRepository.findByRequesterIdNot(requesterId, Sort.by(Sort.Direction.DESC, "creationDate")))
+                .thenReturn(itemRequests);
+
+        when(itemRepository.findByRequestRequesterId(requesterId)).thenReturn(items1, items2);
+
+        when(mapper.toItemRequestDtoWithItems(itemRequest1, items1)).thenReturn(itemRequestDtoWithItems1);
+        when(mapper.toItemRequestDtoWithItems(itemRequest2, items2)).thenReturn(itemRequestDtoWithItems2);
+
+        List<ItemRequestDtoWithItems> resultDtoWithItemsList = itemRequestService.getItemRequests(requesterId, 2, null);
+
+        assertNotNull(resultDtoWithItemsList);
+        assertEquals(expectedDtoWithItemsList.size(), resultDtoWithItemsList.size());
+        assertEquals(expectedDtoWithItemsList.get(0).getId(), resultDtoWithItemsList.get(0).getId());
+        assertEquals(expectedDtoWithItemsList.get(1).getId(), resultDtoWithItemsList.get(1).getId());
+
+        verify(userService, times(1)).get(requesterId);
+        verify(itemRequestRepository, times(1)).findByRequesterIdNot(requesterId, Sort.by(Sort.Direction.DESC, "creationDate"));
+        verify(itemRepository, times(2)).findByRequestRequesterId(requesterId); // Twice, once for each itemRequest
+        verify(mapper, times(1)).toItemRequestDtoWithItems(itemRequest1, items1);
+        verify(mapper, times(1)).toItemRequestDtoWithItems(itemRequest2, items2);
     }
 }

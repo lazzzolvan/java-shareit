@@ -101,6 +101,15 @@ class BookingMapperTest {
     }
 
     @Test
+    void testToBookingResponseOfListNull() {
+        List<Booking> bookings = null;
+
+        List<BookingResponse> bookingResponses = bookingMapper.toBookingResponseOfList(bookings);
+
+        assertEquals(null, bookingResponses);
+    }
+
+    @Test
     void testToBook() {
         Booking mappedBooking = bookingMapper.toBook(bookingRequest);
 
@@ -110,6 +119,14 @@ class BookingMapperTest {
         assertEquals(bookingRequest.getItem(), mappedBooking.getItem());
         assertEquals(bookingRequest.getBooker(), mappedBooking.getBooker());
         assertEquals(bookingRequest.getBookingStatus(), mappedBooking.getStatus());
+    }
+
+    @Test
+    void testToBookNull() {
+        BookingRequest bookingRequestNull = null;
+        Booking mappedBooking = bookingMapper.toBook(bookingRequestNull);
+
+        assertEquals(null, mappedBooking);
     }
 
     @Test
@@ -125,12 +142,26 @@ class BookingMapperTest {
     }
 
     @Test
+    void testToBookingResponseNull() {
+        BookingResponse mappedBookingResponse = bookingMapper.toBookingResponse(null, null, null);
+
+        assertEquals(null, mappedBookingResponse);
+    }
+
+    @Test
     void testToBookFromShort() {
         Booking mappedBooking = bookingMapper.toBookFromShort(bookingShortDto);
 
         assertEquals(bookingShortDto.getId(), mappedBooking.getId());
         assertEquals(bookingShortDto.getStart(), mappedBooking.getStart());
         assertEquals(bookingShortDto.getEnd(), mappedBooking.getEnd());
+    }
+
+    @Test
+    void testToBookFromShortNull() {
+        Booking mappedBooking = bookingMapper.toBookFromShort(null);
+
+        assertEquals(null, mappedBooking);
     }
 
     @Test

@@ -125,7 +125,7 @@ public class BookingImpl implements BookingService {
         return getBookingByOwner(userId, state, page);
     }
 
-    private Booking getFullBooking(Long bookingId) {
+    public Booking getFullBooking(Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .map(booking1 -> {
                     Item item = booking1.getItem();
@@ -160,7 +160,7 @@ public class BookingImpl implements BookingService {
         return booking;
     }
 
-    private List<BookingResponse> getBookingByOwnerWithoutPage(Long userId, BookingState state) {
+    public List<BookingResponse> getBookingByOwnerWithoutPage(Long userId, BookingState state) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new DataNotFoundException("Пользваоетль не найден с id " + userId));
         List<Booking> bookings = new ArrayList<>();
@@ -192,7 +192,7 @@ public class BookingImpl implements BookingService {
         return bookings.stream().map(booking -> mapper.toBookingResponse(booking, booking.getBooker(), booking.getItem())).collect(Collectors.toList());
     }
 
-    private List<BookingResponse> getBookingByOwner(Long userId, BookingState state, Pageable page) {
+    public List<BookingResponse> getBookingByOwner(Long userId, BookingState state, Pageable page) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new DataNotFoundException("Пользваоетль не найден с id " + userId));
         List<Booking> bookings = new ArrayList<>();
@@ -224,7 +224,7 @@ public class BookingImpl implements BookingService {
         return bookings.stream().map(booking -> mapper.toBookingResponse(booking, booking.getBooker(), booking.getItem())).collect(Collectors.toList());
     }
 
-    private List<BookingResponse> getBookingByUserWithoutPage(Long userId, BookingState state) {
+    public List<BookingResponse> getBookingByUserWithoutPage(Long userId, BookingState state) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new DataNotFoundException("Пользваоетль не найден с id " + userId));
         List<Booking> bookings = new ArrayList<>();
@@ -247,7 +247,7 @@ public class BookingImpl implements BookingService {
         return mapper.toBookingResponseOfList(bookings);
     }
 
-    private List<BookingResponse> getBookingByUser(Long userId, BookingState state, Pageable page) {
+    public List<BookingResponse> getBookingByUser(Long userId, BookingState state, Pageable page) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new DataNotFoundException("Пользваоетль не найден с id " + userId));
         List<Booking> bookings = new ArrayList<>();

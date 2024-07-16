@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking.controller.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.item.model.Item;
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
+@Builder
 public class BookingRequest {
 
     private final Long id;

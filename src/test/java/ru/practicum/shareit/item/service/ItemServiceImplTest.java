@@ -23,7 +23,6 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.item.service.ItemServiceImpl;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
@@ -643,5 +642,149 @@ class ItemServiceImplTest {
         verify(bookingRepository, times(1)).findAllByItemIdInAndStartBefore(anyList(), any(LocalDateTime.class), any(Sort.class));
         verify(bookingRepository, times(1)).findAllByItemIdAndStartAfter(anyLong(), any(LocalDateTime.class), any(Sort.class));
         verify(commentRepository, times(2)).findAllByItemId(anyLong());
+    }
+
+    @Test
+    void testSearchItemWithoutPageEmptyName() {
+        String name = "";
+        List<Item> items = new ArrayList<>();
+        when(itemMapper.toItemResponseOfList(items)).thenReturn(Collections.emptyList());
+
+        List<ItemResponse> result = itemService.searchItemWithoutPage(name);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        verify(itemMapper, times(1)).toItemResponseOfList(items);
+    }
+
+    @Test
+    void testUpdateItemName() {
+        // Prepare test data
+        Long userId = 1L;
+        Long itemId = 1L;
+        String newName = "Updated Item Name";
+        ItemRequest updateRequest = ItemRequest.builder()
+                .name(newName)
+                .build();
+
+        User owner = User.builder()
+                .id(1L)
+                .name("Owner")
+                .email("owner@example.com")
+                .build();
+        Item itemCurrent = Item.builder()
+                .id(itemId)
+                .name("Original Item Name")
+                .description("Original description")
+                .available(true)
+                .owner(owner)
+                .build();
+
+        when(itemRepository.findById(itemId)).thenReturn(Optional.of(itemCurrent));
+        when(itemRepository.save(any(Item.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(itemMapper.toItemResponse(any(Item.class))).thenReturn(ItemResponse.builder().id(itemId).name(newName).description("Original description").available(true).build());
+
+        // Call the service method
+        ItemResponse result = itemService.update(userId, itemId, updateRequest);
+
+        // Assertions
+        assertNotNull(result);
+        assertEquals(newName, result.getName());
+
+        // Verify repository method called
+        verify(itemRepository, times(1)).findById(itemId);
+        verify(itemRepository, times(1)).save(any(Item.class));
+        verify(itemMapper, times(1)).toItemResponse(any(Item.class));
+    }
+
+    @Test
+    void testUpdateItemDescription() {
+        // Prepare test data
+        Long userId = 1L;
+        Long itemId = 1L;
+        String newDescription = "Updated Item Description";
+        ItemRequest updateRequest = ItemRequest.builder()
+                .description(newDescription)
+                .build();
+
+        User owner = User.builder()
+                .id(1L)
+                .name("Owner")
+                .email("owner@example.com")
+                .build();
+        Item itemCurrent = Item.builder()
+                .id(itemId)
+                .name("Original Item Name")
+                .description("Original description")
+                .available(true)
+                .owner(owner)
+                .build();
+
+        when(itemRepository.findById(itemId)).thenReturn(Optional.of(itemCurrent));
+        when(itemRepository.save(any(Item.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(itemMapper.toItemResponse(any(Item.class))).thenReturn(ItemResponse.builder()
+                .id(itemId)
+                .name("Original Item Name")
+                .description(newDescription)
+                .available(true)
+                .build());
+
+        // Call the service method
+        ItemResponse result = itemService.update(userId, itemId, updateRequest);
+
+        // Assertions
+        assertNotNull(result);
+        assertEquals(newDescription, result.getDescription());
+
+        // Verify repository method called
+        verify(itemRepository, times(1)).findById(itemId);
+        verify(itemRepository, times(1)).save(any(Item.class));
+        verify(itemMapper, times(1)).toItemResponse(any(Item.class));
+    }
+
+    @Test
+    void testUpdateItemAvailability() {
+        // Prepare test data
+        Long userId = 1L;
+        Long itemId = 1L;
+        Boolean newAvailability = false;
+        ItemRequest updateRequest = ItemRequest.builder()
+                .available(newAvailability)
+                .build();
+
+        User owner = User.builder()
+                .id(1L)
+                .name("Owner")
+                .email("owner@example.com")
+                .build();
+        Item itemCurrent = Item.builder()
+                .id(itemId)
+                .name("Original Item Name")
+                .description("Original description")
+                .available(true)
+                .owner(owner)
+                .build();
+
+        when(itemRepository.findById(itemId)).thenReturn(Optional.of(itemCurrent));
+        when(itemRepository.save(any(Item.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(itemMapper.toItemResponse(any(Item.class))).thenReturn(ItemResponse.builder()
+                .id(itemId)
+                .name("Original Item Name")
+                .description("Original description")
+                .available(newAvailability)
+                .build());
+
+        // Call the service method
+        ItemResponse result = itemService.update(userId, itemId, updateRequest);
+
+        // Assertions
+        assertNotNull(result);
+        assertEquals(newAvailability, result.getAvailable());
+
+        // Verify repository method called
+        verify(itemRepository, times(1)).findById(itemId);
+        verify(itemRepository, times(1)).save(any(Item.class));
+        verify(itemMapper, times(1)).toItemResponse(any(Item.class));
     }
 }

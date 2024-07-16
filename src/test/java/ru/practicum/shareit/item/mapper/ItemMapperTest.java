@@ -83,6 +83,13 @@ class ItemMapperTest {
     }
 
     @Test
+    void testToItemNull() {
+        Item mappedItem = itemMapper.toItem(null, null);
+
+        assertEquals(null, mappedItem);
+    }
+
+    @Test
     void testToItemResponse() {
         ItemResponse mappedItemResponse = itemMapper.toItemResponse(item);
 
@@ -91,6 +98,13 @@ class ItemMapperTest {
         assertEquals(item.getDescription(), mappedItemResponse.getDescription());
         assertEquals(item.getAvailable(), mappedItemResponse.getAvailable());
         assertEquals(item.getRequest() != null ? item.getRequest().getId() : null, mappedItemResponse.getRequestId());
+    }
+
+    @Test
+    void testToItemResponseNull() {
+        ItemResponse mappedItemResponse = itemMapper.toItemResponse(null);
+
+        assertEquals(null, mappedItemResponse);
     }
 
     @Test
@@ -107,5 +121,12 @@ class ItemMapperTest {
         assertEquals(item.getDescription(), mappedItemResponse.getDescription());
         assertEquals(item.getAvailable(), mappedItemResponse.getAvailable());
         assertEquals(item.getRequest() != null ? item.getRequest().getId() : null, mappedItemResponse.getRequestId());
+    }
+
+    @Test
+    void testToItemResponseOfListNull() {
+        List<ItemResponse> mappedItemResponses = itemMapper.toItemResponseOfList(null);
+
+        assertEquals(null, mappedItemResponses);
     }
 }

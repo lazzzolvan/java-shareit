@@ -559,4 +559,339 @@ class BookingImplTest {
         verify(bookingRepository, never()).findAllByBooker(any(User.class), any(Pageable.class));
         verify(bookingMapper, never()).toBookingResponseOfList(anyList());
     }
+
+    @Test
+    void testGetBookingByUser() {
+        // Mock userRepository behavior
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        // Mock bookingRepository behavior based on BookingState
+        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "start"));
+        when(bookingRepository.findAllByBooker(user, pageable)).thenReturn(new PageImpl<>(bookingList));
+
+        // Mock mapper behavior
+        when(bookingMapper.toBookingResponseOfList(any())).thenReturn(new ArrayList<>()); // Adjust behavior if needed
+
+        // Test with BookingState.ALL
+        List<BookingResponse> responses = bookingService.getBookingByUser(1L, BookingState.ALL, pageable);
+        assertNotNull(responses);
+        assertEquals(0, responses.size()); // Assuming mapper.toBookingResponseOfList returns an empty list for this mock
+
+        // Verify interactions
+        verify(userRepository, times(1)).findById(1L);
+        verify(bookingRepository, times(1)).findAllByBooker(user, pageable);
+        verify(bookingMapper, times(1)).toBookingResponseOfList(bookingList);
+    }
+
+    @Test
+    void testGetBookingByUserThrowsExceptionWhenUserNotFound() {
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(DataNotFoundException.class, () -> bookingService.getBookingByUser(1L, BookingState.ALL, PageRequest.of(0, 10)));
+
+        verify(userRepository, times(1)).findById(1L);
+        verifyNoMoreInteractions(bookingRepository, bookingMapper);
+    }
+
+    @Test
+    void testGetBookingByUserWithoutPage() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        Sort sortByStartDesc = Sort.by(Sort.Direction.DESC, "start");
+        when(bookingRepository.findAllByBooker(user, sortByStartDesc)).thenReturn(bookingList);
+
+        when(bookingMapper.toBookingResponseOfList(any())).thenReturn(new ArrayList<>());
+
+        List<BookingResponse> responses = bookingService.getBookingByUserWithoutPage(1L, BookingState.ALL);
+        assertNotNull(responses);
+        assertEquals(0, responses.size());
+
+        verify(userRepository, times(1)).findById(1L);
+        verify(bookingRepository, times(1)).findAllByBooker(user, sortByStartDesc);
+        verify(bookingMapper, times(1)).toBookingResponseOfList(bookingList);
+    }
+
+    @Test
+    void testGetBookingByUserWithoutPageThrowsExceptionWhenUserNotFound() {
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(DataNotFoundException.class, () -> bookingService.getBookingByUserWithoutPage(1L, BookingState.ALL));
+
+        verify(userRepository, times(1)).findById(1L);
+        verifyNoMoreInteractions(bookingRepository, bookingMapper);
+    }
+
+    @Test
+    void testGetBookingByUserWithoutPageAll() {
+        // Mock userRepository behavior
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        // Mock bookingRepository behavior
+        Sort sortByStartDesc = Sort.by(Sort.Order.desc("start"));
+        when(bookingRepository.findAllByBooker(user, sortByStartDesc)).thenReturn(bookingList);
+
+        // Mock mapper behavior
+        when(bookingMapper.toBookingResponseOfList(any())).thenReturn(new ArrayList<>()); // Adjust behavior if needed
+
+        // Test with BookingState.ALL
+        List<BookingResponse> responses = bookingService.getBookingByUserWithoutPage(1L, BookingState.ALL);
+        assertNotNull(responses);
+        assertEquals(0, responses.size()); // Assuming mapper.toBookingResponseOfList returns an empty list for this mock
+
+        // Verify interactions
+        verify(userRepository, times(1)).findById(1L);
+        verify(bookingRepository, times(1)).findAllByBooker(user, sortByStartDesc);
+        verify(bookingMapper, times(1)).toBookingResponseOfList(bookingList);
+    }
+
+    @Test
+    void testGetBookingByUserWithoutPageWaiting() {
+        // Mock userRepository behavior
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        // Mock bookingRepository behavior
+        Sort sortByStartDesc = Sort.by(Sort.Order.desc("start"));
+        when(bookingRepository.findAllByBookerAndStatusEquals(user, BookingStatus.WAITING, sortByStartDesc)).thenReturn(bookingList);
+
+        // Mock mapper behavior
+        when(bookingMapper.toBookingResponseOfList(any())).thenReturn(new ArrayList<>()); // Adjust behavior if needed
+
+        // Test with BookingState.WAITING
+        List<BookingResponse> responses = bookingService.getBookingByUserWithoutPage(1L, BookingState.WAITING);
+        assertNotNull(responses);
+        assertEquals(0, responses.size()); // Assuming mapper.toBookingResponseOfList returns an empty list for this mock
+
+        // Verify interactions
+        verify(userRepository, times(1)).findById(1L);
+        verify(bookingRepository, times(1)).findAllByBookerAndStatusEquals(user, BookingStatus.WAITING, sortByStartDesc);
+        verify(bookingMapper, times(1)).toBookingResponseOfList(bookingList);
+    }
+
+    @Test
+    void testGetBookingByUserWithoutPageRejected() {
+        // Mock userRepository behavior
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        // Mock bookingRepository behavior
+        Sort sortByStartDesc = Sort.by(Sort.Order.desc("start"));
+        when(bookingRepository.findAllByBookerAndStatusEquals(user, BookingStatus.REJECTED, sortByStartDesc)).thenReturn(bookingList);
+
+        // Mock mapper behavior
+        when(bookingMapper.toBookingResponseOfList(any())).thenReturn(new ArrayList<>()); // Adjust behavior if needed
+
+        // Test with BookingState.REJECTED
+        List<BookingResponse> responses = bookingService.getBookingByUserWithoutPage(1L, BookingState.REJECTED);
+        assertNotNull(responses);
+        assertEquals(0, responses.size()); // Assuming mapper.toBookingResponseOfList returns an empty list for this mock
+
+        // Verify interactions
+        verify(userRepository, times(1)).findById(1L);
+        verify(bookingRepository, times(1)).findAllByBookerAndStatusEquals(user, BookingStatus.REJECTED, sortByStartDesc);
+        verify(bookingMapper, times(1)).toBookingResponseOfList(bookingList);
+    }
+
+    @Test
+    void testGetBookingByUserWithoutPageUnsupportedState() {
+        // Mock userRepository behavior
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        // Test with unsupported BookingState
+        assertThrows(NotCorrectRequestException.class, () -> bookingService.getBookingByUserWithoutPage(1L, BookingState.UNSUPPORTED_STATUS));
+
+        // Verify interactions
+        verify(userRepository, times(1)).findById(1L);
+        verifyNoInteractions(bookingRepository, bookingMapper);
+    }
+
+    @Test
+    void testGetBookingByUserWithoutPageExceptionWhenUserNotFound() {
+        // Mock userRepository behavior
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // Test that DataNotFoundException is thrown
+        assertThrows(DataNotFoundException.class, () -> bookingService.getBookingByUserWithoutPage(1L, BookingState.ALL));
+
+        // Verify interactions
+        verify(userRepository, times(1)).findById(1L);
+        verifyNoMoreInteractions(bookingRepository, bookingMapper);
+    }
+
+    @Test
+    void testGetBookingByOwnerWithoutPageAll() {
+        // Mock userRepository behavior
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        // Mock bookingRepository behavior
+        Sort sortByStartDesc = Sort.by(Sort.Order.desc("start"));
+        when(bookingRepository.findAllByItemOwner(user, sortByStartDesc)).thenReturn(bookingList);
+
+        BookingResponse bookingResponse = BookingResponse.builder()
+                .id(booking.getId())
+                .status(BookingStatus.REJECTED)
+                .item(booking.getItem())
+                .booker(booking.getBooker())
+                .start(booking.getStart())
+                .end(booking.getEnd())
+                .build();
+        when(bookingMapper.toBookingResponse(any(), any(), any()))
+                .thenReturn(bookingResponse);
+
+        // Mock mapper behavior
+        when(bookingMapper.toBookingResponse(any(), any(), any())).thenReturn(bookingResponse); // Adjust behavior if needed
+
+        // Test with BookingState.ALL
+        List<BookingResponse> responses = bookingService.getBookingByOwnerWithoutPage(1L, BookingState.ALL);
+        assertNotNull(responses);
+        assertEquals(1, responses.size()); // Assuming mapper.toBookingResponse returns a list with one element for this mock
+
+        // Verify interactions
+        verify(userRepository, times(1)).findById(1L);
+        verify(bookingRepository, times(1)).findAllByItemOwner(user, sortByStartDesc);
+        verify(bookingMapper, times(1)).toBookingResponse(booking, booking.getBooker(), booking.getItem());
+    }
+
+    @Test
+    void testGetBookingByOwnerWithoutPageWaiting() {
+        // Mock userRepository behavior
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        // Mock bookingRepository behavior
+        Sort sortByStartDesc = Sort.by(Sort.Order.desc("start"));
+        when(bookingRepository.findAllByItemOwnerAndStatusEquals(user, BookingStatus.WAITING, sortByStartDesc)).thenReturn(bookingList);
+        BookingResponse bookingResponse = BookingResponse.builder()
+                .id(booking.getId())
+                .status(BookingStatus.REJECTED)
+                .item(booking.getItem())
+                .booker(booking.getBooker())
+                .start(booking.getStart())
+                .end(booking.getEnd())
+                .build();
+        when(bookingMapper.toBookingResponse(any(), any(), any()))
+                .thenReturn(bookingResponse);
+        when(bookingMapper.toBookingResponse(any(), any(), any())).thenReturn(bookingResponse);
+
+        // Test with BookingState.WAITING
+        List<BookingResponse> responses = bookingService.getBookingByOwnerWithoutPage(1L, BookingState.WAITING);
+        assertNotNull(responses);
+        assertEquals(1, responses.size()); // Assuming mapper.toBookingResponse returns a list with one element for this mock
+
+        // Verify interactions
+        verify(userRepository, times(1)).findById(1L);
+        verify(bookingRepository, times(1)).findAllByItemOwnerAndStatusEquals(user, BookingStatus.WAITING, sortByStartDesc);
+        verify(bookingMapper, times(1)).toBookingResponse(booking, booking.getBooker(), booking.getItem());
+    }
+
+    @Test
+    void testGetBookingByOwnerWithoutPageRejected() {
+        // Mock userRepository behavior
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        // Mock bookingRepository behavior
+        Sort sortByStartDesc = Sort.by(Sort.Order.desc("start"));
+        when(bookingRepository.findAllByItemOwnerAndStatusEquals(user, BookingStatus.REJECTED, sortByStartDesc)).thenReturn(bookingList);
+        BookingResponse bookingResponse = BookingResponse.builder()
+                .id(booking.getId())
+                .status(BookingStatus.REJECTED)
+                .item(booking.getItem())
+                .booker(booking.getBooker())
+                .start(booking.getStart())
+                .end(booking.getEnd())
+                .build();
+        when(bookingMapper.toBookingResponse(any(), any(), any()))
+                .thenReturn(bookingResponse);
+        when(bookingMapper.toBookingResponse(any(), any(), any())).thenReturn(bookingResponse);
+
+        // Test with BookingState.REJECTED
+        List<BookingResponse> responses = bookingService.getBookingByOwnerWithoutPage(1L, BookingState.REJECTED);
+        assertNotNull(responses);
+        assertEquals(1, responses.size()); // Assuming mapper.toBookingResponse returns a list with one element for this mock
+
+        // Verify interactions
+        verify(userRepository, times(1)).findById(1L);
+        verify(bookingRepository, times(1)).findAllByItemOwnerAndStatusEquals(user, BookingStatus.REJECTED, sortByStartDesc);
+        verify(bookingMapper, times(1)).toBookingResponse(booking, booking.getBooker(), booking.getItem());
+    }
+
+    @Test
+    void testGetBookingByOwnerWithoutPageUnsupportedState() {
+        // Mock userRepository behavior
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        // Test with unsupported BookingState
+        assertThrows(NotCorrectRequestException.class, () -> bookingService.getBookingByOwnerWithoutPage(1L, BookingState.UNSUPPORTED_STATUS));
+
+        // Verify interactions
+        verify(userRepository, times(1)).findById(1L);
+        verifyNoMoreInteractions(bookingRepository, bookingMapper);
+    }
+
+    @Test
+    void testGetBookingByOwnerWithoutPageThrowsExceptionWhenUserNotFound() {
+        // Mock userRepository behavior
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // Test that DataNotFoundException is thrown
+        assertThrows(DataNotFoundException.class, () -> bookingService.getBookingByOwnerWithoutPage(1L, BookingState.ALL));
+
+        // Verify interactions
+        verify(userRepository, times(1)).findById(1L);
+        verifyNoMoreInteractions(bookingRepository, bookingMapper);
+    }
+
+    @Test
+    void testGetFullBooking() {
+        // Mock bookingRepository behavior
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
+
+        // Perform the method call
+        Booking result = bookingService.getFullBooking(1L);
+
+        // Assertions
+        assertNotNull(result);
+        assertEquals(booking.getId(), result.getId());
+        assertEquals(booking.getStatus(), result.getStatus());
+        assertEquals(booking.getStart(), result.getStart());
+        assertEquals(booking.getEnd(), result.getEnd());
+        assertEquals(booking.getBooker().getId(), result.getBooker().getId());
+        assertEquals(booking.getBooker().getName(), result.getBooker().getName());
+        assertEquals(booking.getBooker().getEmail(), result.getBooker().getEmail());
+        assertEquals(booking.getItem().getId(), result.getItem().getId());
+        assertEquals(booking.getItem().getName(), result.getItem().getName());
+        assertEquals(booking.getItem().getDescription(), result.getItem().getDescription());
+        assertEquals(booking.getItem().getAvailable(), result.getItem().getAvailable());
+        assertEquals(booking.getItem().getOwner().getId(), result.getItem().getOwner().getId());
+        assertEquals(booking.getItem().getOwner().getName(), result.getItem().getOwner().getName());
+        assertEquals(booking.getItem().getOwner().getEmail(), result.getItem().getOwner().getEmail());
+
+        // Verify interactions
+        verify(bookingRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void testGetFullBookingNotFound() {
+        // Mock bookingRepository behavior
+        when(bookingRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // Perform the method call and assert exception
+        DataNotFoundException exception = assertThrows(DataNotFoundException.class, () -> bookingService.getFullBooking(1L));
+        assertEquals("Бронь не найдена id 1", exception.getMessage());
+
+        // Verify interactions
+        verify(bookingRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void testGetBookingByOwnerUnknownState() {
+        // Mock repository response (not used in this test)
+        Pageable pageable = Pageable.unpaged();
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        // Call the service method and assert exception
+        NotCorrectRequestException exception = assertThrows(NotCorrectRequestException.class, () -> {
+            bookingService.getBookingByOwner(user.getId(), BookingState.UNSUPPORTED_STATUS, pageable);
+        });
+
+        // Assertions
+        assertEquals("Unknown state: UNSUPPORTED_STATUS", exception.getMessage());
+    }
 }
+

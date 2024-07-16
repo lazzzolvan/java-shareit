@@ -238,7 +238,7 @@ public class ItemServiceImpl implements ItemService {
         return itemResponse;
     }
 
-    private List<ItemResponse> searchItemWithoutPage(String name) {
+    public List<ItemResponse> searchItemWithoutPage(String name) {
         List<Item> items = new ArrayList<>();
         if (name.isEmpty())
             return itemMapper.toItemResponseOfList(items);
