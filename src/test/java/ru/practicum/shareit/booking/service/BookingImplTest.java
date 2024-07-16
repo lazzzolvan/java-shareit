@@ -341,12 +341,13 @@ class BookingImplTest {
 
     @Test
     void testCreateBookingEndIsStart() {
+        LocalDateTime dateTime = LocalDateTime.now().plusDays(2);
         BookingShortDto bookingDto2 = BookingShortDto.builder()
                 .id(1L)
                 .itemId(item.getId())
                 .bookerId(user.getId())
-                .start(LocalDateTime.now().plusDays(2))
-                .end(LocalDateTime.now().plusDays(2))
+                .start(dateTime)
+                .end(dateTime)
                 .build();
 
         User currentUser = User.builder()
