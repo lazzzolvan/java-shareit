@@ -15,9 +15,9 @@ public interface ItemService {
 
     Boolean remove(Long itemId);
 
-    List<ItemResponse> getAllByUser(Long userId);
+    List<ItemResponse> getAllByUser(Long userId, Integer from, Integer size);
 
-    ItemResponse get(Long itemId, Long userId, Integer from, Integer size);
+    ItemResponse get(Long itemId, Long userId);
 
     List<ItemResponse> searchItem(String name, Integer from, Integer size);
 

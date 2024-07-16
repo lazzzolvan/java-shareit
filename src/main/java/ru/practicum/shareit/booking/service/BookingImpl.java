@@ -103,9 +103,7 @@ public class BookingImpl implements BookingService {
     @Override
     @Transactional
     public List<BookingResponse> getAllByUser(Long userId, BookingState state, Integer from, Integer size) {
-        if (from == null || size == null) {
-            return getBookingByUserWithoutPage(userId, state);
-        } else if (from < 0 || size <= 0) {
+        if (from < 0 || size <= 0) {
             throw new NotCorrectRequestException("Not correct page parameters");
         }
         int pageNumber = from / size;
@@ -115,9 +113,7 @@ public class BookingImpl implements BookingService {
 
     @Override
     public List<BookingResponse> getAllByOwner(Long userId, BookingState state, Integer from, Integer size) {
-        if (from == null || size == null) {
-            return getBookingByOwnerWithoutPage(userId, state);
-        } else if (from < 0 || size <= 0) {
+        if (from < 0 || size <= 0) {
             throw new NotCorrectRequestException("Not correct page parameters");
         }
         int pageNumber = from / size;
@@ -160,38 +156,6 @@ public class BookingImpl implements BookingService {
         return booking;
     }
 
-    public List<BookingResponse> getBookingByOwnerWithoutPage(Long userId, BookingState state) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new DataNotFoundException("Пользваоетль не найден с id " + userId));
-        List<Booking> bookings = new ArrayList<>();
-
-        switch (state) {
-            case ALL:
-                bookings.addAll(bookingRepository.findAllByItemOwner(user, sortByStartDesc));
-                break;
-            case CURRENT:
-                bookings.addAll(bookingRepository.findAllByItemOwnerAndStartBeforeAndEndAfter(user,
-                        LocalDateTime.now(), LocalDateTime.now(), sortByStartAsc));
-                break;
-            case PAST:
-                bookings.addAll(bookingRepository.findAllByItemOwnerAndEndBefore(user, LocalDateTime.now(), sortByStartDesc));
-                break;
-            case FUTURE:
-                bookings.addAll(bookingRepository.findAllByItemOwnerAndStartAfter(user, LocalDateTime.now(), sortByStartDesc));
-                break;
-            case WAITING:
-                bookings.addAll(bookingRepository.findAllByItemOwnerAndStatusEquals(user, BookingStatus.WAITING, sortByStartDesc));
-                break;
-            case REJECTED:
-                bookings.addAll(bookingRepository.findAllByItemOwnerAndStatusEquals(user, BookingStatus.REJECTED, sortByStartDesc));
-                break;
-            default:
-                throw new NotCorrectRequestException("Unknown state: " + BookingState.UNSUPPORTED_STATUS);
-        }
-
-        return bookings.stream().map(booking -> mapper.toBookingResponse(booking, booking.getBooker(), booking.getItem())).collect(Collectors.toList());
-    }
-
     public List<BookingResponse> getBookingByOwner(Long userId, BookingState state, Pageable page) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new DataNotFoundException("Пользваоетль не найден с id " + userId));
@@ -222,29 +186,6 @@ public class BookingImpl implements BookingService {
         }
 
         return bookings.stream().map(booking -> mapper.toBookingResponse(booking, booking.getBooker(), booking.getItem())).collect(Collectors.toList());
-    }
-
-    public List<BookingResponse> getBookingByUserWithoutPage(Long userId, BookingState state) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new DataNotFoundException("Пользваоетль не найден с id " + userId));
-        List<Booking> bookings = new ArrayList<>();
-
-        if (state.equals(BookingState.ALL)) {
-            bookings.addAll(bookingRepository.findAllByBooker(user, sortByStartDesc));
-        } else if (state.equals(BookingState.CURRENT)) {
-            bookings.addAll(bookingRepository.findAllByBookerAndStartBeforeAndEndAfter(user, LocalDateTime.now(), LocalDateTime.now(), sortByStartDesc));
-        } else if (state.equals(BookingState.PAST)) {
-            bookings.addAll(bookingRepository.findAllByBookerAndEndBefore(user, LocalDateTime.now(), sortByStartDesc));
-        } else if (state.equals(BookingState.FUTURE)) {
-            bookings.addAll(bookingRepository.findAllByBookerAndStartAfter(user, LocalDateTime.now(), sortByStartDesc));
-        } else if (state.equals(BookingState.WAITING)) {
-            bookings.addAll(bookingRepository.findAllByBookerAndStatusEquals(user, BookingStatus.WAITING, sortByStartDesc));
-        } else if (state.equals(BookingState.REJECTED)) {
-            bookings.addAll(bookingRepository.findAllByBookerAndStatusEquals(user, BookingStatus.REJECTED, sortByStartDesc));
-        } else
-            throw new NotCorrectRequestException("Unknown state: " + BookingState.UNSUPPORTED_STATUS);
-
-        return mapper.toBookingResponseOfList(bookings);
     }
 
     public List<BookingResponse> getBookingByUser(Long userId, BookingState state, Pageable page) {

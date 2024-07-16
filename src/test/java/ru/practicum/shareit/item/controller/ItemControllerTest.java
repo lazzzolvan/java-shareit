@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.practicum.shareit.item.controller.dto.ItemRequest;
 import ru.practicum.shareit.item.controller.dto.ItemResponse;
 import ru.practicum.shareit.item.service.ItemService;
@@ -73,7 +74,7 @@ public class ItemControllerTest {
                 .name("Test Item")
                 .build();
 
-        doReturn(response).when(itemService).get(itemId, userId, null, null);
+        doReturn(response).when(itemService).get(itemId, userId);
 
         // Act & Assert
         mockMvc.perform(get("/items/{itemId}", itemId)
@@ -94,7 +95,7 @@ public class ItemControllerTest {
                 ItemResponse.builder().id(2L).name("Item 2").build()
         );
 
-        doReturn(responses).when(itemService).getAllByUser(userId);
+        doReturn(responses).when(itemService).getAllByUser(userId,0, 10);
 
         // Act & Assert
         mockMvc.perform(get("/items")
@@ -128,10 +129,11 @@ public class ItemControllerTest {
                 ItemResponse.builder().id(2L).name("Test Item 2").build()
         );
 
-        doReturn(responses).when(itemService).searchItem(itemName, null, null);
+        // Mock the service method
+        doReturn(responses).when(itemService).searchItem(itemName, 0, 10); // Assuming from=0, size=10
 
         // Act & Assert
-        mockMvc.perform(get("/items/search")
+        mockMvc.perform(MockMvcRequestBuilders.get("/items/search")
                         .param("text", itemName))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))

@@ -9,6 +9,8 @@ import ru.practicum.shareit.booking.model.BookingState;
 import ru.practicum.shareit.booking.service.BookingService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @Slf4j
@@ -48,8 +50,8 @@ public class BookingController {
                                               @RequestParam(name = "state",
                                                       required = false,
                                                       defaultValue = "ALL") BookingState state,
-                                              @RequestParam(required = false) Integer from,
-                                              @RequestParam(required = false) Integer size) {
+                                              @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
+                                              @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
         log.info("Получаем все бронирования текущего пользователяс id = {}", userId);
         return bookingService.getAllByUser(userId, state, from, size);
     }
@@ -59,8 +61,8 @@ public class BookingController {
                                                @RequestParam(name = "state",
                                                        required = false,
                                                        defaultValue = "ALL") BookingState state,
-                                               @RequestParam(required = false) Integer from,
-                                               @RequestParam(required = false) Integer size) {
+                                               @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
+                                               @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
         log.info("Получаем все бронирования текущего владельца id = {}", userId);
         return bookingService.getAllByOwner(userId, state, from, size);
     }

@@ -110,21 +110,38 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional
-    public ItemResponse get(Long itemId, Long userId, Integer from, Integer size) {
-        if (from == null || size == null) {
-            return getItemWithoutPage(itemId, userId);
-        } else if (from < 0 || size <= 0) {
-            throw new NotCorrectRequestException("Not correct page parameters");
+    public ItemResponse get(Long itemId, Long userId) {
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new DataNotFoundException("Вещь не найдена с id " + itemId));
+        ItemResponse itemResponse = itemMapper.toItemResponse(item);
+        itemResponse.setComments(commentRepository.findAllByItemId(itemId).stream()
+                .map(commentMapper::toCommentResponse).collect(Collectors.toList()));
+
+        if (item.getOwner().getId().equals(userId)) {
+            List<Booking> lastBookings = bookingRepository.findAllByItemIdAndStartBefore(itemId, LocalDateTime.now(), sortByStartDesc);
+            if (!lastBookings.isEmpty()) {
+                itemResponse.setLastBooking(bookingMapper.toBookingShortDtoFromBooking(lastBookings.get(0)));
+            }
+
+            if (itemResponse.getLastBooking() != null) {
+                List<Booking> nextBookings = bookingRepository.findAllByItemIdAndStartAfter(itemId, LocalDateTime.now(), sortByStartAsc);
+                if (!nextBookings.isEmpty()) {
+                    itemResponse.setNextBooking(bookingMapper.toBookingShortDtoFromBooking(nextBookings.get(0)));
+                }
+            }
         }
-        int pageNumber = from / size;
-        Pageable page = PageRequest.of(pageNumber, size, Sort.by(Sort.Direction.DESC, "start"));
-        return getItem(itemId, userId, page);
+        return itemResponse;
     }
 
     @Override
-    public List<ItemResponse> getAllByUser(Long userId) {
+    public List<ItemResponse> getAllByUser(Long userId, Integer from, Integer size) {
+        if (from < 0 || size <= 0) {
+            throw new NotCorrectRequestException("Not correct page parameters");
+        }
+        int pageNumber = from / size;
+        Pageable page = PageRequest.of(pageNumber, size);
 
-        List<Item> items = itemRepository.findAllByOwnerIdOrderByIdAsc(userId);
+        List<Item> items = itemRepository.findAllByOwnerIdOrderByIdAsc(userId, page).getContent();
         List<ItemResponse> itemDtos = items.stream().map(itemMapper::toItemResponse).collect(Collectors.toList());
         List<Long> itemIds = itemDtos.stream().map(ItemResponse::getId).collect(Collectors.toList());
 
@@ -154,9 +171,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemResponse> searchItem(String name, Integer from, Integer size) {
-        if (from == null || size == null) {
-            return searchItemWithoutPage(name);
-        } else if (from < 0 || size <= 0) {
+        if (from < 0 || size <= 0) {
             throw new NotCorrectRequestException("Not correct page parameters");
         }
         int pageNumber = from / size;
@@ -188,75 +203,11 @@ public class ItemServiceImpl implements ItemService {
         return commentMapper.toCommentResponse(commentRepository.save(comment));
     }
 
-    private ItemResponse getItemWithoutPage(Long itemId, Long userId) {
-        Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new DataNotFoundException("Вещь не найдена с id " + itemId));
-        ItemResponse itemResponse = itemMapper.toItemResponse(item);
-        itemResponse.setComments(commentRepository.findAllByItemId(itemId).stream()
-                .map(commentMapper::toCommentResponse).collect(Collectors.toList()));
-
-        if (item.getOwner().getId().equals(userId)) {
-            List<Booking> lastBookings = bookingRepository.findAllByItemIdAndStartBefore(itemId, LocalDateTime.now(), sortByStartDesc);
-            if (!lastBookings.isEmpty()) {
-                itemResponse.setLastBooking(bookingMapper.toBookingShortDtoFromBooking(lastBookings.get(0)));
-            }
-
-            if (itemResponse.getLastBooking() != null) {
-                List<Booking> nextBookings = bookingRepository.findAllByItemIdAndStartAfter(itemId, LocalDateTime.now(), sortByStartAsc);
-                if (!nextBookings.isEmpty()) {
-                    itemResponse.setNextBooking(bookingMapper.toBookingShortDtoFromBooking(nextBookings.get(0)));
-                }
-
-            }
-        }
-
-        return itemResponse;
-    }
-
-    private ItemResponse getItem(Long itemId, Long userId, Pageable page) {
-        Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new DataNotFoundException("Вещь не найдена с id " + itemId));
-        ItemResponse itemResponse = itemMapper.toItemResponse(item);
-        itemResponse.setComments(commentRepository.findAllByItemId(itemId, page).stream()
-                .map(commentMapper::toCommentResponse).collect(Collectors.toList()));
-
-        if (item.getOwner().getId().equals(userId)) {
-            List<Booking> lastBookings = bookingRepository.findAllByItemIdAndStartBefore(itemId, LocalDateTime.now(), page).getContent();
-            if (!lastBookings.isEmpty()) {
-                itemResponse.setLastBooking(bookingMapper.toBookingShortDtoFromBooking(lastBookings.get(0)));
-            }
-
-            if (itemResponse.getLastBooking() != null) {
-                List<Booking> nextBookings = bookingRepository.findAllByItemIdAndStartAfter(itemId, LocalDateTime.now(), page).getContent();
-                if (!nextBookings.isEmpty()) {
-                    itemResponse.setNextBooking(bookingMapper.toBookingShortDtoFromBooking(nextBookings.get(0)));
-                }
-
-            }
-        }
-
-        return itemResponse;
-    }
-
-    public List<ItemResponse> searchItemWithoutPage(String name) {
-        List<Item> items = new ArrayList<>();
-        if (name.isEmpty())
-            return itemMapper.toItemResponseOfList(items);
-        for (Item item : itemRepository.findAll()) {
-            if (item.getDescription().toLowerCase().contains(name.toLowerCase()) && item.getAvailable())
-                items.add(item);
-        }
-        return itemMapper.toItemResponseOfList(items);
-    }
-
     public List<ItemResponse> searchItemWithPage(String name, Pageable page) {
         List<Item> items = new ArrayList<>();
         if (name.isEmpty())
             return itemMapper.toItemResponseOfList(items);
-        for (Item item : itemRepository.findAll(page).getContent()) {
-            if (item.getDescription().toLowerCase().contains(name.toLowerCase()) && item.getAvailable())
-                items.add(item);
-        }
+        items = itemRepository.search(name, page).getContent();
         return itemMapper.toItemResponseOfList(items);
     }
 }

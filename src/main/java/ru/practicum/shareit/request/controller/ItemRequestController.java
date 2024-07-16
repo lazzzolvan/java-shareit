@@ -15,6 +15,8 @@ import ru.practicum.shareit.request.controller.dto.ItemRequestDtoWithItems;
 import ru.practicum.shareit.request.service.ItemRequestService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
@@ -47,8 +49,8 @@ public class ItemRequestController {
 
     @GetMapping("/all")
     public List<ItemRequestDtoWithItems> getItemRequests(@RequestHeader(header) long userId,
-                                                         @RequestParam(required = false) Integer from,
-                                                         @RequestParam(required = false) Integer size) {
+                                                         @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
+                                                         @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
         log.info("Request for get {} requests for items from {} request", size, from);
         return requestService.getItemRequests(userId, from, size);
     }

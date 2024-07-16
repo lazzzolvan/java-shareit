@@ -13,6 +13,8 @@ import java.util.List;
 public interface ItemRepository extends JpaRepository<Item, Long> {
     List<Item> findAllByOwnerIdOrderByIdAsc(Long ownerId);
 
+    Page<Item> findAllByOwnerIdOrderByIdAsc(Long ownerId, Pageable page);
+
     @Query("SELECT i " +
             "FROM Item i " +
             "WHERE (UPPER(i.name) LIKE UPPER(CONCAT('%', ?1, '%') ) " +
@@ -22,5 +24,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     List<Item> findByRequestRequesterId(Long requestId);
 
-    Page<Item> findAll(Pageable page);
+    @Query("SELECT i FROM Item i WHERE LOWER(i.name) LIKE LOWER(CONCAT('%', :name, '%')) OR LOWER(i.description) LIKE LOWER(CONCAT('%', :name, '%')) AND i.available = true")
+    Page<Item> search(String name, Pageable pageable);
+
 }

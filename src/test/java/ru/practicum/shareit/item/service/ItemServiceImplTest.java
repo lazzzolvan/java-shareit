@@ -247,7 +247,7 @@ class ItemServiceImplTest {
         ItemResponse itemResponse = new ItemResponse(itemId, item.getName(), item.getDescription(), item.getAvailable(), null, null, null, commentResponses);
         when(itemMapper.toItemResponse(item)).thenReturn(itemResponse);
 
-        ItemResponse response = itemService.get(itemId, userId, null, null);
+        ItemResponse response = itemService.get(itemId, userId);
 
         assertNotNull(response);
         assertEquals(itemId, response.getId());
@@ -260,7 +260,7 @@ class ItemServiceImplTest {
     }
 
     @Test
-    void testGetItemWithPage() {
+    void testGetItemWith() {
         Long itemId = 1L;
         Long userId = 1L;
         User user = User.builder()
@@ -286,7 +286,7 @@ class ItemServiceImplTest {
                 .author(User.builder().id(userId).build())
                 .item(item)
                 .build();
-        when(commentRepository.findAllByItemId(item.getId(), PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "start")))).thenReturn(new PageImpl<>(List.of(comment)));
+        when(commentRepository.findAllByItemId(item.getId())).thenReturn(List.of(comment));
         when(commentMapper.toCommentResponse(comment)).thenReturn(CommentResponse.builder()
                 .id(comment.getId())
                 .text(comment.getText())
@@ -302,10 +302,7 @@ class ItemServiceImplTest {
                 .item(item)
                 .booker(user)
                 .build();
-        Page<Booking> bookingPage = new PageImpl<>(List.of(booking));
-        Pageable page = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "start"));
-        when(bookingRepository.findAllByItemIdAndStartBefore(anyLong(), any(LocalDateTime.class),
-                any(PageRequest.class))).thenReturn(bookingPage);
+        when(bookingRepository.findAllByItemIdAndStartBefore(anyLong(), any(LocalDateTime.class), any(Sort.class))).thenReturn(List.of(booking));
         when(bookingMapper.toBookingShortDtoFromBooking(booking)).thenReturn(BookingShortDto.builder()
                 .id(booking.getId())
                 .start(booking.getStart())
@@ -313,11 +310,9 @@ class ItemServiceImplTest {
                 .itemId(booking.getItem().getId())
                 .bookerId(booking.getBooker().getId())
                 .build());
-        Page<Booking> bookings = new PageImpl<>(Collections.emptyList());
-        when(bookingRepository.findAllByItemIdAndStartAfter(anyLong(), any(LocalDateTime.class),
-                any(PageRequest.class))).thenReturn(bookings);
+        when(bookingRepository.findAllByItemIdAndStartAfter(anyLong(), any(LocalDateTime.class), any(Sort.class))).thenReturn(List.of(booking));
 
-        ItemResponse response = itemService.get(item.getId(), item.getOwner().getId(), 0, 10);
+        ItemResponse response = itemService.get(item.getId(), item.getOwner().getId());
 
         assertNotNull(response);
         assertEquals(itemResponse.getId(), response.getId());
@@ -327,15 +322,11 @@ class ItemServiceImplTest {
         assertEquals("Test comment", response.getComments().get(0).getText());
         assertNotNull(response.getLastBooking());
         verify(itemRepository, times(1)).findById(item.getId());
-        verify(commentRepository, times(1)).findAllByItemId(item.getId(), page);
-        verify(bookingRepository, times(1)).findAllByItemIdAndStartBefore(anyLong(), any(LocalDateTime.class),
-                any(PageRequest.class));
-        verify(bookingRepository, times(1)).findAllByItemIdAndStartAfter(anyLong(), any(LocalDateTime.class),
-                any(PageRequest.class));
+        verify(commentRepository, times(1)).findAllByItemId(item.getId());
     }
 
     @Test
-    void testGetItemWithInvalidPage() {
+    void testGetItemWithInvalidUser() {
         Long itemId = 1L;
         Long userId = 1L;
         User user = User.builder()
@@ -350,8 +341,8 @@ class ItemServiceImplTest {
                 .owner(user)
                 .build();
 
-        assertThrows(NotCorrectRequestException.class, () -> {
-            itemService.get(item.getId(), item.getOwner().getId(), -1, 0);
+        assertThrows(DataNotFoundException.class, () -> {
+            itemService.get(99L, item.getOwner().getId());
         });
     }
 
@@ -467,14 +458,14 @@ class ItemServiceImplTest {
         int size = 2;
         Pageable pageable = PageRequest.of(from / size, size);
         List<Item> items = List.of(item1, item2);
-        when(itemRepository.findAll(pageable)).thenReturn(new PageImpl<>(items));
+        when(itemRepository.search(searchName, pageable)).thenReturn(new PageImpl<>(items));
         when(itemMapper.toItemResponseOfList(anyList())).thenReturn(List.of(itemResponse1, itemResponse2));
 
         List<ItemResponse> responses = itemService.searchItem(searchName, from, size);
 
         assertNotNull(responses);
         assertEquals(2, responses.size());
-        verify(itemRepository, times(1)).findAll(pageable);
+        verify(itemRepository, times(1)).search(searchName, pageable);
         verify(itemMapper, times(1)).toItemResponseOfList(items);
     }
 
@@ -498,7 +489,7 @@ class ItemServiceImplTest {
         List<Item> emptyItems = new ArrayList<>();
         when(itemMapper.toItemResponseOfList(emptyItems)).thenReturn(Collections.emptyList());
 
-        List<ItemResponse> responses = itemService.searchItem(searchName, null, null);
+        List<ItemResponse> responses = itemService.searchItem(searchName, 0, 10);
 
         assertNotNull(responses);
         assertTrue(responses.isEmpty());
@@ -602,8 +593,9 @@ class ItemServiceImplTest {
 
         List<Item> items = List.of(item1, item2);
         List<ItemResponse> itemResponses = List.of(itemResponse1, itemResponse2);
-
-        when(itemRepository.findAllByOwnerIdOrderByIdAsc(userId)).thenReturn(items);
+        Pageable page = PageRequest.of(0, 10);
+        Page itemsPage = new PageImpl(items);
+        when(itemRepository.findAllByOwnerIdOrderByIdAsc(userId, page)).thenReturn(itemsPage);
         when(itemMapper.toItemResponse(item1)).thenReturn(itemResponse1);
         when(itemMapper.toItemResponse(item2)).thenReturn(itemResponse2);
 
@@ -620,7 +612,7 @@ class ItemServiceImplTest {
         when(commentRepository.findAllByItemId(item1.getId())).thenReturn(List.of(comment));
         when(commentMapper.toCommentResponse(comment)).thenReturn(commentResponse);
 
-        List<ItemResponse> responses = itemService.getAllByUser(userId);
+        List<ItemResponse> responses = itemService.getAllByUser(userId, 0, 10);
 
         assertNotNull(responses);
         assertEquals(2, responses.size());
@@ -638,24 +630,9 @@ class ItemServiceImplTest {
         assertNull(response2.getNextBooking());
         assertEquals(0, response2.getComments().size());
 
-        verify(itemRepository, times(1)).findAllByOwnerIdOrderByIdAsc(userId);
         verify(bookingRepository, times(1)).findAllByItemIdInAndStartBefore(anyList(), any(LocalDateTime.class), any(Sort.class));
         verify(bookingRepository, times(1)).findAllByItemIdAndStartAfter(anyLong(), any(LocalDateTime.class), any(Sort.class));
         verify(commentRepository, times(2)).findAllByItemId(anyLong());
-    }
-
-    @Test
-    void testSearchItemWithoutPageEmptyName() {
-        String name = "";
-        List<Item> items = new ArrayList<>();
-        when(itemMapper.toItemResponseOfList(items)).thenReturn(Collections.emptyList());
-
-        List<ItemResponse> result = itemService.searchItemWithoutPage(name);
-
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
-
-        verify(itemMapper, times(1)).toItemResponseOfList(items);
     }
 
     @Test

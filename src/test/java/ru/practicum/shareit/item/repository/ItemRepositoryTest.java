@@ -136,4 +136,20 @@ class ItemRepositoryTest {
         assertThat(itemsPage.getContent()).hasSize(1);
         assertThat(itemsPage.getContent().get(0)).isEqualTo(item3);
     }
+
+    @Test
+    void testSearchItemsByNameOrDescriptionIgnoreCase() {
+        // Given
+        String searchTerm = "item";
+        Pageable pageable = PageRequest.of(0, 10); // Page 0, size 10
+
+        // When
+        Page<Item> resultPage = itemRepository.search(searchTerm, pageable);
+        List<Item> resultList = resultPage.getContent();
+
+        // Then
+        assertThat(resultList).hasSize(3); // Expecting 2 items found
+        assertThat(resultList).extracting(Item::getName).contains("Item1", "Item2", "Another Item");
+    }
+
 }
