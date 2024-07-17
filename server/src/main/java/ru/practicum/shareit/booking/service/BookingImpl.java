@@ -33,9 +33,6 @@ public class BookingImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final BookingMapper mapper;
 
-    private final Sort sortByStartDesc = Sort.by(Sort.Direction.DESC, "start");
-    private final Sort sortByStartAsc = Sort.by(Sort.Direction.DESC, "start");
-
     @Override
     @Transactional
     public BookingResponse create(BookingShortDto bookingDto, Long userId) {
