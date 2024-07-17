@@ -570,9 +570,9 @@ class ItemServiceImplTest {
 
         List<Item> items = List.of(item1, item2);
         List<ItemResponse> itemResponses = List.of(itemResponse1, itemResponse2);
-        Pageable page = PageRequest.of(0, 10);
+        Pageable page = PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "id"));
         Page itemsPage = new PageImpl(items);
-        when(itemRepository.findAllByOwnerIdOrderByIdAsc(userId, page)).thenReturn(itemsPage);
+        when(itemRepository.findAllByOwnerId(userId, page)).thenReturn(itemsPage);
         when(itemMapper.toItemResponse(item1)).thenReturn(itemResponse1);
         when(itemMapper.toItemResponse(item2)).thenReturn(itemResponse2);
 

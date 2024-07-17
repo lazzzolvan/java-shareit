@@ -8,13 +8,14 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,6 +54,7 @@ class ItemRepositoryTest {
         itemRequest1 = new ItemRequest();
         itemRequest1.setDescription("Request 1");
         itemRequest1.setRequester(user1);
+        itemRequest1.setCreationDate(LocalDateTime.now());
         itemRequest1 = itemRequestRepository.save(itemRequest1);
 
         item1 = new Item();
@@ -81,7 +83,8 @@ class ItemRepositoryTest {
 
     @Test
     void testFindAllByOwnerIdOrderByIdAsc() {
-        List<Item> items = itemRepository.findAllByOwnerIdOrderByIdAsc(user1.getId());
+        Sort sort = Sort.by(Sort.Direction.ASC, "id");
+        List<Item> items = itemRepository.findAllByOwnerId(user1.getId(), sort);
 
         assertThat(items).hasSize(2);
         assertThat(items.get(0)).isEqualTo(item1);

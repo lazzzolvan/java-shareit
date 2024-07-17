@@ -136,9 +136,9 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<ItemResponse> getAllByUser(Long userId, Integer from, Integer size) {
         int pageNumber = from / size;
-        Pageable page = PageRequest.of(pageNumber, size);
+        Pageable page = PageRequest.of(pageNumber, size, Sort.by(Sort.Direction.ASC, "id"));
 
-        List<Item> items = itemRepository.findAllByOwnerIdOrderByIdAsc(userId, page).getContent();
+        List<Item> items = itemRepository.findAllByOwnerId(userId, page).getContent();
         List<ItemResponse> itemDtos = items.stream().map(itemMapper::toItemResponse).collect(Collectors.toList());
         List<Long> itemIds = itemDtos.stream().map(ItemResponse::getId).collect(Collectors.toList());
 
