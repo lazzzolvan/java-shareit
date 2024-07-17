@@ -7,7 +7,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.DataNotFoundException;
-import ru.practicum.shareit.exception.NotCorrectRequestException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.controller.dto.ItemRequestDto;
@@ -70,17 +69,6 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public List<ItemRequestDtoWithItems> getItemRequests(Long requesterId, Integer from, Integer size) {
-        userService.get(requesterId);
-        if (from == null || size == null)
-            return itemRequestRepository.findByRequesterIdNot(requesterId, sortCreatedByDesc)
-                    .stream()
-                    .map(itemRequest -> mapper.toItemRequestDtoWithItems(itemRequest,
-                            itemRepository.findByRequestRequesterId(
-                                    itemRequest.getRequester().getId())))
-                    .collect(Collectors.toList());
-        else if (from < 0 || size <= 0) {
-            throw new NotCorrectRequestException("Not correct page parameters");
-        } else {
             int pageNumber = from / size;
             Pageable page = PageRequest.of(pageNumber, size, Sort.by(Sort.Direction.DESC, "id"));
             return itemRequestRepository.findByRequesterIdNot(requesterId, page)
@@ -88,6 +76,5 @@ public class ItemRequestServiceImpl implements ItemRequestService {
                     .map(itemRequest -> mapper.toItemRequestDtoWithItems(itemRequest,
                             itemRepository.findByRequestRequesterId(itemRequest.getRequester().getId())))
                     .collect(Collectors.toList());
-        }
     }
 }

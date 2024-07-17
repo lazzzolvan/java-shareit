@@ -135,9 +135,6 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemResponse> getAllByUser(Long userId, Integer from, Integer size) {
-        if (from < 0 || size <= 0) {
-            throw new NotCorrectRequestException("Not correct page parameters");
-        }
         int pageNumber = from / size;
         Pageable page = PageRequest.of(pageNumber, size);
 
@@ -171,9 +168,6 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemResponse> searchItem(String name, Integer from, Integer size) {
-        if (from < 0 || size <= 0) {
-            throw new NotCorrectRequestException("Not correct page parameters");
-        }
         int pageNumber = from / size;
         Pageable page = PageRequest.of(pageNumber, size);
         return searchItemWithPage(name, page);

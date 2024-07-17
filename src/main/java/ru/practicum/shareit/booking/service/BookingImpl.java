@@ -103,9 +103,6 @@ public class BookingImpl implements BookingService {
     @Override
     @Transactional
     public List<BookingResponse> getAllByUser(Long userId, BookingState state, Integer from, Integer size) {
-        if (from < 0 || size <= 0) {
-            throw new NotCorrectRequestException("Not correct page parameters");
-        }
         int pageNumber = from / size;
         Pageable page = PageRequest.of(pageNumber, size, Sort.by(Sort.Direction.DESC, "start"));
         return getBookingByUser(userId, state, page);
@@ -113,9 +110,6 @@ public class BookingImpl implements BookingService {
 
     @Override
     public List<BookingResponse> getAllByOwner(Long userId, BookingState state, Integer from, Integer size) {
-        if (from < 0 || size <= 0) {
-            throw new NotCorrectRequestException("Not correct page parameters");
-        }
         int pageNumber = from / size;
         Pageable page = PageRequest.of(pageNumber, size, Sort.by(Sort.Direction.DESC, "start"));
         return getBookingByOwner(userId, state, page);

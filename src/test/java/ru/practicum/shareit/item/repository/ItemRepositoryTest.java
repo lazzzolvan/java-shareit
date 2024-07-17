@@ -89,21 +89,6 @@ class ItemRepositoryTest {
     }
 
     @Test
-    void testSearch() {
-        List<Item> items = itemRepository.search("Item");
-
-        assertThat(items).hasSize(2);
-        assertThat(items).contains(item1, item3);
-    }
-
-    @Test
-    void testSearchNotAvailable() {
-        List<Item> items = itemRepository.search("Description2");
-
-        assertThat(items).isEmpty();
-    }
-
-    @Test
     void testFindByRequestRequesterId() {
         List<Item> items = itemRepository.findByRequestRequesterId(itemRequest1.getRequester().getId());
 

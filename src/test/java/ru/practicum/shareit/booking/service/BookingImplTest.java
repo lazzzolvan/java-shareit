@@ -505,20 +505,6 @@ class BookingImplTest {
     }
 
     @Test
-    void testGetAllByUser_InvalidPageParameters_ThrowsNotCorrectRequestException() {
-        Integer from = -1;
-        Integer size = 0;
-
-        assertThrows(NotCorrectRequestException.class, () -> {
-            bookingService.getAllByUser(user.getId(), BookingState.ALL, from, size);
-        });
-
-        verify(userRepository, never()).findById(anyLong());
-        verify(bookingRepository, never()).findAllByBooker(any(User.class), any(Pageable.class));
-        verify(bookingMapper, never()).toBookingResponseOfList(anyList());
-    }
-
-    @Test
     void testGetBookingByUser() {
         // Mock userRepository behavior
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -605,20 +591,6 @@ class BookingImplTest {
 
         // Assertions
         assertEquals("Unknown state: UNSUPPORTED_STATUS", exception.getMessage());
-    }
-
-    @Test
-    void testGetAllByOwnerWithNegativeFromOrSize() {
-        Long userId = 1L;
-        BookingState state = BookingState.ALL;
-
-        Exception exception = assertThrows(NotCorrectRequestException.class, () ->
-                bookingService.getAllByOwner(userId, state, -1, 10));
-        assertEquals("Not correct page parameters", exception.getMessage());
-
-        exception = assertThrows(NotCorrectRequestException.class, () ->
-                bookingService.getAllByOwner(userId, state, 0, 0));
-        assertEquals("Not correct page parameters", exception.getMessage());
     }
 }
 

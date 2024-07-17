@@ -497,29 +497,6 @@ class ItemServiceImplTest {
     }
 
     @Test
-    void testSearchItemWithInvalidPageParameters() {
-        Item item1 = Item.builder()
-                .id(1L)
-                .name("Item 1")
-                .description("Description 1")
-                .available(true)
-                .build();
-
-        Item item2 = Item.builder()
-                .id(2L)
-                .name("Item 2")
-                .description("Description 2")
-                .available(true)
-                .build();
-
-        assertThrows(NotCorrectRequestException.class, () -> itemService.searchItem("Description", -1, 2));
-        assertThrows(NotCorrectRequestException.class, () -> itemService.searchItem("Description", 0, 0));
-
-        verify(itemRepository, never()).findAll(any(Pageable.class));
-        verify(itemMapper, never()).toItemResponseOfList(anyList());
-    }
-
-    @Test
     void testGetAllByUser() {
         Long userId = 1L;
         User user = User.builder()
