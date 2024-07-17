@@ -10,6 +10,8 @@ import ru.practicum.shareit.item.controller.dto.ItemResponse;
 import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
@@ -35,9 +37,11 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemResponse> getAll(@RequestHeader(header) Long userId) {
+    public List<ItemResponse> getAll(@RequestHeader(header) Long userId,
+                                     @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
+                                     @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
         log.info("Получен запрос на получение списка вещей владельца с id = {}", userId);
-        return service.getAllByUser(userId);
+        return service.getAllByUser(userId, from, size);
     }
 
     @DeleteMapping("/{itemId}")
@@ -54,9 +58,11 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public List<ItemResponse> searchItem(@RequestParam("text") String name) {
+    public List<ItemResponse> searchItem(@RequestParam("text") String name,
+                                         @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
+                                         @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
         log.info("Search item with name {}", name);
-        return service.searchItem(name);
+        return service.searchItem(name, from, size);
     }
 
     @PostMapping("{itemId}/comment")

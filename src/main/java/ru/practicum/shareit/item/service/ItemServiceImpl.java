@@ -1,6 +1,8 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,7 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -27,6 +30,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
@@ -40,6 +44,7 @@ public class ItemServiceImpl implements ItemService {
     private final CommentRepository commentRepository;
     private final ItemMapper itemMapper;
     private final CommentMapper commentMapper;
+    private final ItemRequestRepository itemRequestRepository;
     private final Sort sortByStartDesc = Sort.by(Sort.Direction.DESC, "start");
     private final Sort sortByStartAsc = Sort.by(Sort.Direction.ASC, "start");
     private final Sort sortByItemAndStartAsc = Sort.by(Sort.Direction.ASC, "itemId", "start");
@@ -51,6 +56,13 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new DataNotFoundException("Пользователь не найден с id " + userId));
 
         Item itemModified = itemMapper.toItem(item, user);
+        if (item.getRequestId() != null) {
+            Optional<ru.practicum.shareit.request.model.ItemRequest> itemRequest = itemRequestRepository.findById(item.getRequestId());
+            if (itemRequest.isPresent()) {
+                itemModified.setRequest(itemRequest.get());
+            }
+        } else
+            itemModified.setRequest(null);
         return itemMapper.toItemResponse(itemRepository.save(itemModified));
     }
 
@@ -116,17 +128,17 @@ public class ItemServiceImpl implements ItemService {
                 if (!nextBookings.isEmpty()) {
                     itemResponse.setNextBooking(bookingMapper.toBookingShortDtoFromBooking(nextBookings.get(0)));
                 }
-
             }
         }
-
         return itemResponse;
     }
 
     @Override
-    public List<ItemResponse> getAllByUser(Long userId) {
+    public List<ItemResponse> getAllByUser(Long userId, Integer from, Integer size) {
+        int pageNumber = from / size;
+        Pageable page = PageRequest.of(pageNumber, size);
 
-        List<Item> items = itemRepository.findAllByOwnerIdOrderByIdAsc(userId);
+        List<Item> items = itemRepository.findAllByOwnerIdOrderByIdAsc(userId, page).getContent();
         List<ItemResponse> itemDtos = items.stream().map(itemMapper::toItemResponse).collect(Collectors.toList());
         List<Long> itemIds = itemDtos.stream().map(ItemResponse::getId).collect(Collectors.toList());
 
@@ -154,15 +166,11 @@ public class ItemServiceImpl implements ItemService {
         return itemDtos;
     }
 
-    public List<ItemResponse> searchItem(String name) {
-        List<Item> items = new ArrayList<>();
-        if (name.isEmpty())
-            return itemMapper.toItemResponseOfList(items);
-        for (Item item : itemRepository.findAll()) {
-            if (item.getDescription().toLowerCase().contains(name.toLowerCase()) && item.getAvailable())
-                items.add(item);
-        }
-        return itemMapper.toItemResponseOfList(items);
+    @Override
+    public List<ItemResponse> searchItem(String name, Integer from, Integer size) {
+        int pageNumber = from / size;
+        Pageable page = PageRequest.of(pageNumber, size);
+        return searchItemWithPage(name, page);
     }
 
     @Override
@@ -187,5 +195,13 @@ public class ItemServiceImpl implements ItemService {
         comment.setCreated(LocalDateTime.now());
 
         return commentMapper.toCommentResponse(commentRepository.save(comment));
+    }
+
+    public List<ItemResponse> searchItemWithPage(String name, Pageable page) {
+        List<Item> items = new ArrayList<>();
+        if (name.isEmpty())
+            return itemMapper.toItemResponseOfList(items);
+        items = itemRepository.search(name, page).getContent();
+        return itemMapper.toItemResponseOfList(items);
     }
 }

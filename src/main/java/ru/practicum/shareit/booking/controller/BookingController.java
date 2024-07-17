@@ -2,6 +2,7 @@ package ru.practicum.shareit.booking.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.controller.dto.BookingResponse;
 import ru.practicum.shareit.booking.controller.dto.BookingShortDto;
@@ -9,8 +10,11 @@ import ru.practicum.shareit.booking.model.BookingState;
 import ru.practicum.shareit.booking.service.BookingService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
+@Validated
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -30,15 +34,15 @@ public class BookingController {
 
     @PatchMapping("/{bookingId}")
     public BookingResponse updateBooking(@PathVariable Long bookingId,
-                                    @RequestHeader(header) Long userId,
-                                    @RequestParam Boolean approved) {
+                                         @RequestHeader(header) Long userId,
+                                         @RequestParam Boolean approved) {
         log.info("Обновление статуса бронирования id " + bookingId + ", пользователем id: " + userId);
         return bookingService.update(bookingId, userId, approved);
     }
 
     @GetMapping("/{bookingId}")
     public BookingResponse getById(@RequestHeader(header) Long userId,
-                              @PathVariable Long bookingId) {
+                                   @PathVariable Long bookingId) {
         log.info("Получаем информацию о бронировании: {}", bookingId);
         return bookingService.getById(bookingId, userId);
     }
@@ -46,19 +50,23 @@ public class BookingController {
     @GetMapping
     public List<BookingResponse> getAllByUser(@RequestHeader(header) Long userId,
                                               @RequestParam(name = "state",
-                                                 required = false,
-                                                 defaultValue = "ALL") BookingState state) {
+                                                      required = false,
+                                                      defaultValue = "ALL") BookingState state,
+                                              @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
+                                              @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
         log.info("Получаем все бронирования текущего пользователяс id = {}", userId);
-        return bookingService.getAllByUser(userId, state);
+        return bookingService.getAllByUser(userId, state, from, size);
     }
 
     @GetMapping("/owner")
-    public  List<BookingResponse> getAllByOwner(@RequestHeader(header) Long userId,
-                                           @RequestParam(name = "state",
-                                                   required = false,
-                                                   defaultValue = "ALL") BookingState state) {
+    public List<BookingResponse> getAllByOwner(@RequestHeader(header) Long userId,
+                                               @RequestParam(name = "state",
+                                                       required = false,
+                                                       defaultValue = "ALL") BookingState state,
+                                               @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
+                                               @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
         log.info("Получаем все бронирования текущего владельца id = {}", userId);
-        return bookingService.getAllByOwner(userId, state);
+        return bookingService.getAllByOwner(userId, state, from, size);
     }
 }
 
