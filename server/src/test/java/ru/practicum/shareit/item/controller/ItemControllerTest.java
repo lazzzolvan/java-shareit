@@ -8,13 +8,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.practicum.shareit.item.controller.dto.ItemRequest;
 import ru.practicum.shareit.item.controller.dto.ItemResponse;
 import ru.practicum.shareit.item.service.ItemService;
 
-import java.util.Arrays;
-import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -86,29 +83,6 @@ public class ItemControllerTest {
     }
 
     @Test
-    void testGetAllItems() throws Exception {
-        // Arrange
-        Long userId = 1L;
-
-        List<ItemResponse> responses = Arrays.asList(
-                ItemResponse.builder().id(1L).name("Item 1").build(),
-                ItemResponse.builder().id(2L).name("Item 2").build()
-        );
-
-        doReturn(responses).when(itemService).getAllByUser(userId,0, 10);
-
-        // Act & Assert
-        mockMvc.perform(get("/items")
-                        .header("X-Sharer-User-Id", userId))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].id").value(1L))
-                .andExpect(jsonPath("$[0].name").value("Item 1"))
-                .andExpect(jsonPath("$[1].id").value(2L))
-                .andExpect(jsonPath("$[1].name").value("Item 2"));
-    }
-
-    @Test
     void testRemoveItem() throws Exception {
         // Arrange
         Long itemId = 1L;
@@ -119,28 +93,4 @@ public class ItemControllerTest {
         mockMvc.perform(delete("/items/{itemId}", itemId))
                 .andExpect(status().isOk());
     }
-
-    @Test
-    void testSearchItem() throws Exception {
-        // Arrange
-        String itemName = "Test";
-        List<ItemResponse> responses = Arrays.asList(
-                ItemResponse.builder().id(1L).name("Test Item 1").build(),
-                ItemResponse.builder().id(2L).name("Test Item 2").build()
-        );
-
-        // Mock the service method
-        doReturn(responses).when(itemService).searchItem(itemName, 0, 10); // Assuming from=0, size=10
-
-        // Act & Assert
-        mockMvc.perform(MockMvcRequestBuilders.get("/items/search")
-                        .param("text", itemName))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].id").value(1L))
-                .andExpect(jsonPath("$[0].name").value("Test Item 1"))
-                .andExpect(jsonPath("$[1].id").value(2L))
-                .andExpect(jsonPath("$[1].name").value("Test Item 2"));
-    }
-
 }

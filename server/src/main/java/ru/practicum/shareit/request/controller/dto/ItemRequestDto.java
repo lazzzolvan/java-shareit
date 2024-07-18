@@ -3,7 +3,6 @@ package ru.practicum.shareit.request.controller.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
-import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 
 @Getter
@@ -15,7 +14,6 @@ public class ItemRequestDto {
 
     private Long id;
 
-    @NotBlank
     private String description;
 
 

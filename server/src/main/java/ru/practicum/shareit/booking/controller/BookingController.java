@@ -45,10 +45,9 @@ public class BookingController {
     @GetMapping
     public List<BookingResponse> getAllByUser(@RequestHeader(header) Long userId,
                                               @RequestParam(name = "state",
-                                                      required = false,
-                                                      defaultValue = "ALL") BookingState state,
-                                              @RequestParam(name = "from", defaultValue = "0") Integer from,
-                                              @RequestParam(name = "size", defaultValue = "10") Integer size) {
+                                                      required = false) BookingState state,
+                                              @RequestParam(name = "from") Integer from,
+                                              @RequestParam(name = "size") Integer size) {
         log.info("Получаем все бронирования текущего пользователяс id = {}", userId);
         return bookingService.getAllByUser(userId, state, from, size);
     }
@@ -56,10 +55,9 @@ public class BookingController {
     @GetMapping("/owner")
     public List<BookingResponse> getAllByOwner(@RequestHeader(header) Long userId,
                                                @RequestParam(name = "state",
-                                                       required = false,
-                                                       defaultValue = "ALL") BookingState state,
-                                               @RequestParam(name = "from", defaultValue = "0") Integer from,
-                                               @RequestParam(name = "size", defaultValue = "10") Integer size) {
+                                                       required = false) BookingState state,
+                                               @RequestParam(name = "from") Integer from,
+                                               @RequestParam(name = "size") Integer size) {
         log.info("Получаем все бронирования текущего владельца id = {}", userId);
         return bookingService.getAllByOwner(userId, state, from, size);
     }

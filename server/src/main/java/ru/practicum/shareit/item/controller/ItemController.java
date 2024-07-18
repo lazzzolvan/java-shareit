@@ -35,8 +35,8 @@ public class ItemController {
 
     @GetMapping
     public List<ItemResponse> getAll(@RequestHeader(header) Long userId,
-                                     @RequestParam(name = "from", defaultValue = "0") Integer from,
-                                     @RequestParam(name = "size", defaultValue = "10") Integer size) {
+                                     @RequestParam(name = "from") Integer from,
+                                     @RequestParam(name = "size") Integer size) {
         log.info("Получен запрос на получение списка вещей владельца с id = {}", userId);
         return service.getAllByUser(userId, from, size);
     }
@@ -56,8 +56,8 @@ public class ItemController {
 
     @GetMapping("/search")
     public List<ItemResponse> searchItem(@RequestParam("text") String name,
-                                         @RequestParam(name = "from", defaultValue = "0") Integer from,
-                                         @RequestParam(name = "size", defaultValue = "10") Integer size) {
+                                         @RequestParam(name = "from") Integer from,
+                                         @RequestParam(name = "size") Integer size) {
         log.info("Search item with name {}", name);
         return service.searchItem(name, from, size);
     }
